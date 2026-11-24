@@ -26,6 +26,8 @@ pkg.__path__ = [str(PKG_DIR)]
 sys.modules["shl"] = pkg
 api = importlib.import_module("shl.api")
 const = importlib.import_module("shl.const")
+table = importlib.import_module("shl.table")
+schedule = importlib.import_module("shl.schedule")
 
 
 async def main(team: str | None) -> None:
@@ -41,6 +43,7 @@ async def main(team: str | None) -> None:
 
         regular = flt.game_types.get(const.GAME_TYPE_REGULAR, flt.default_game_type_uuid)
         games = await client.async_get_games(flt.season_uuid, flt.series_uuid, regular)
+        all_games = games
         if team:
             games = [g for g in games if g.involves(team.upper())]
 
@@ -66,14 +69,48 @@ async def main(team: str | None) -> None:
         for g in upcoming[:5]:
             print(line(g))
 
-        table = await client.async_get_standings(flt.ssgt_uuid)
-        print(f"\nStandings ({len(table)} teams):")
+        official = await client.async_get_standings(flt.ssgt_uuid)
+        print(f"\nStandings ({len(official)} teams):")
         print("   #  Team   GP   W OTW OTL   L   GF  GA  +/-  P")
-        for r in table:
+        for r in official:
             print(f"  {r.rank:>2}  {r.team_code:<5} {r.games_played:>3} {r.wins:>3} "
                   f"{r.overtime_wins:>3} {r.overtime_losses:>3} {r.losses:>3} "
                   f"{r.goals_for:>4} {r.goals_against:>3} {r.goal_difference:>4} "
                   f"{r.points:>2}  {r.name}")
+
+        if not team:
+            compare_tables(official, all_games)
+
+
+def compare_tables(official, games) -> None:
+    """Compare the table calculated from results with SHL's own."""
+    calculated = {r.team_code: r for r in table.standings_from_games(games, official)}
+    behind = set(schedule.table_behind(official, games))
+    if behind:
+        print(f"\nSHL's table has not caught up yet for {', '.join(sorted(behind))} "
+              "- those teams are skipped")
+    fields = ("rank", "games_played", "wins", "overtime_wins", "overtime_losses",
+              "losses", "goals_for", "goals_against", "points")
+    print("\nCalculated table vs SHL's:")
+    diffs = 0
+    for row in official:
+        if row.team_code in behind:
+            continue
+        mine = calculated.get(row.team_code)
+        if mine is None:
+            print(f"  {row.team_code:<5} missing from the calculated table")
+            diffs += 1
+            continue
+        for name in fields:
+            if name == "rank" and behind:
+                continue  # ranks cannot be compared while some rows lag
+            if getattr(row, name) != getattr(mine, name):
+                print(f"  {row.team_code:<5} {name}: SHL {getattr(row, name)}, "
+                      f"calculated {getattr(mine, name)}")
+                diffs += 1
+    shootouts = sum(g.shootout for g in games if g.is_played)
+    print(f"  {'All teams match' if not diffs else f'{diffs} differences'} "
+          f"({shootouts} games decided by shootout so far)")
 
 
 if __name__ == "__main__":

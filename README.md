@@ -85,7 +85,8 @@ played), `home_game`, `home_code`, `away_code`, `home_team`, `away_team`,
 `home_logo`, `away_logo`, `home_score`, `away_score` and `venue`. The list is
 not saved in the recorder database.
 
-**Standings:** `table` – a list with one item per team containing `rank`,
+**Standings:** `source` (`official`, or `calculated` while SHL's own table has
+not yet caught up with the latest results), `table` – a list with one item per team containing `rank`,
 `team_code`, `name`, `logo` and the same numbers as the position sensor. The
 table is not saved in the recorder database.
 
@@ -127,9 +128,12 @@ it fetches depends on your favorite teams:
 | One of your teams plays within 6 hours | every 30 minutes (and at puck drop) |
 | Otherwise | every 8 hours |
 
-The standings are only fetched when a game has finished. The current season is
-checked weekly, and daily once the regular season is over, so playoffs and new
-seasons are picked up automatically.
+The standings are only fetched when a game has finished. SHL publishes its
+updated table a while after the final whistle, so until it has caught up the
+table is calculated from the results and SHL's is read again every 10 minutes.
+
+The current season is checked weekly, and daily once the regular season is
+over, so playoffs and new seasons are picked up automatically.
 
 The intervals cannot be changed. If you want full control, turn off polling in
 the integration's **System options** and call `homeassistant.update_entity`

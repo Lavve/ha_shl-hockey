@@ -19,6 +19,7 @@ pkg.__path__ = [str(PKG_DIR)]
 sys.modules["shl"] = pkg
 models = importlib.import_module("shl.models")
 schedule = importlib.import_module("shl.schedule")
+table = importlib.import_module("shl.table")
 
 NOW = datetime(2026, 11, 24, 12, 0, tzinfo=UTC)
 FAV = ["FHC"]
@@ -98,6 +99,34 @@ def main() -> None:
         ("Table: upcoming games do not count", schedule.table_behind(
             [standing("FHC", 0)], [game("FHC", "FBK", H, "pre-game")]), []),
     ]
+
+    def result(home, away, hs, as_, ot=False, so=False):
+        g = game(home, away, -H, "post-game")
+        return models.Game(**{**{f: getattr(g, f) for f in g.__slots__},
+                              "home": models.GameTeam(home, home, None, hs),
+                              "away": models.GameTeam(away, away, None, as_),
+                              "overtime": ot, "shootout": so})
+
+    calc = {r.team_code: r for r in table.standings_from_games([
+        result("FHC", "FBK", 3, 1),               # FHC regulation win
+        result("FBK", "LHF", 2, 1, ot=True),      # FBK overtime win
+        result("LHF", "FHC", 3, 2, so=True),      # LHF shootout win
+        game("FHC", "LHF", H, "pre-game"),        # not played: ignored
+    ])}
+    as_tuple = lambda r: (r.games_played, r.wins, r.overtime_wins, r.overtime_losses,
+                          r.losses, r.goals_for, r.goals_against, r.points)
+    checks += [
+        ("Calc: FHC 2 GP, W, SO loss, 5-4, 4p", as_tuple(calc["FHC"]), (2, 1, 0, 1, 0, 5, 4, 4)),
+        ("Calc: FBK 2 GP, OT win, loss, 3-4, 2p", as_tuple(calc["FBK"]), (2, 0, 1, 0, 1, 3, 4, 2)),
+        ("Calc: LHF 2 GP, OT loss, SO win, 4-4, 3p", as_tuple(calc["LHF"]), (2, 0, 1, 1, 0, 4, 4, 3)),
+        ("Calc: ranked by points", [r.team_code for r in sorted(calc.values(), key=lambda r: r.rank)],
+         ["FHC", "LHF", "FBK"]),
+    ]
+    official = [models.Standing(1, "A", "A", None, 0, 0, 0, 0, 0, 0, 0, 0),
+                models.Standing(2, "B", "B", None, 0, 0, 0, 0, 0, 0, 0, 0)]
+    tied = table.standings_from_games([result("A", "C", 2, 1), result("B", "D", 2, 1)], official)
+    checks.append(("Calc: full tie keeps official order",
+                   [r.team_code for r in tied][:2], ["A", "B"]))
 
     for name, got, expected in checks:
         ok = got == expected
