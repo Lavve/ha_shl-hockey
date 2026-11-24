@@ -1,0 +1,25 @@
+# The next five games. The first one is highlighted.
+#
+# Requires: the "Games played" sensor to be enabled (it is disabled by default).
+# Team: replace "frolunda_hc" with your team's entity prefix.
+
+type: markdown
+content: |
+  {% set games = (state_attr('sensor.frolunda_hc_games_played', 'games') or [])
+                 | rejectattr('played') | list %}
+  {% if games | count == 0 %}
+  _No upcoming games_
+  {% else %}
+  <table width="100%">
+  <tr><th>Home</th><th>Time / Venue</th><th>Away</th></tr>
+  {% for g in games[:5] %}
+  {% set b = loop.first %}
+  {% set t = as_local(g.start if g.start is datetime else as_datetime(g.start)) %}
+  <tr>
+  <td width="25%" align="center"><img src="{{ g.home_logo }}" width="45" height="45"><br>{{ '<b>' if b else '' }}{{ g.home_team }}{{ '</b>' if b else '' }}</td>
+  <td align="center">{{ '<b>' if b else '<sup>' }}{{ t.strftime('%a %d/%m %H:%M') }}{{ '</b>' if b else '</sup>' }}<br>{{ g.venue }}</td>
+  <td width="25%" align="center"><img src="{{ g.away_logo }}" width="45" height="45"><br>{{ '<b>' if b else '' }}{{ g.away_team }}{{ '</b>' if b else '' }}</td>
+  </tr>
+  {% endfor %}
+  </table>
+  {% endif %}

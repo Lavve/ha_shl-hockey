@@ -14,7 +14,7 @@ Swedish Hockey League (SHL) for your favorite teams.
   <img src="images/table.png" alt="Standings" width="32%" align="top">
 </p>
 
-<sub>Example dashboard built with Markdown and flex-table cards using this integration's sensors. The cards themselves are not part of the integration – see [Dashboard examples](#dashboard-examples).</sub>
+<sub>Example dashboard built with Markdown and flex-table cards using this integration's sensors. The cards themselves are not part of the integration – see [Examples](#examples).</sub>
 
 ## Features
 
@@ -94,61 +94,27 @@ results are counted in `overtime_wins` and `overtime_losses`.
 
 Team logos are linked from shl.se, not included in this repository.
 
-## Dashboard examples
+## Examples
 
-Next game, formatted by Home Assistant in your language:
+Ready-to-copy dashboard cards and automations are in the
+[examples](examples/) folder:
+
+| Example | Shows |
+|---|---|
+| [Next game](examples/cards/next_game.yaml) | Countdown, live and final score |
+| [Upcoming games](examples/cards/upcoming_games.yaml) | The next five games |
+| [Latest results](examples/cards/latest_results.yaml) | The five latest results |
+| [Team stats](examples/cards/team_stats.yaml) | Position, points, record, home/away and form |
+| [Standings](examples/cards/standings.yaml) | The full standings table |
+| [Game notification](examples/automations/game_notification.yaml) | A notification five minutes before puck drop |
+
+The simplest start is a built-in tile card, which Home Assistant formats in
+your language:
 
 ```yaml
 type: tile
 entity: sensor.frolunda_hc_next_game
 ```
-
-Standings in a Markdown card:
-
-```yaml
-type: markdown
-content: |
-  | # | Team | GP | +/- | P |
-  |--:|:--|--:|--:|--:|
-  {% for r in state_attr('sensor.shl_standings', 'table') or [] -%}
-  | {{ r.rank }} | {{ r.name }} | {{ r.games_played }} | {{ r.goal_difference }} | {{ r.points }} |
-  {% endfor %}
-```
-
-The last five results, newest first:
-
-```yaml
-type: markdown
-content: |
-  {% set games = state_attr('sensor.frolunda_hc_games_played', 'games') or [] %}
-  {% for g in (games | selectattr('played') | list | reverse | list)[:5] -%}
-  {{ g.home_team }} {{ g.home_score }}–{{ g.away_score }} {{ g.away_team }}
-  {% endfor %}
-```
-
-## Automation example
-
-A notification five minutes before puck drop. The time trigger follows the next game sensor, so it moves to the next game by itself.
-
-```yaml
-alias: Frölunda plays in five minutes
-triggers:
-  - trigger: time
-    at:
-      entity_id: sensor.frolunda_hc_next_game
-      offset: "-00:05:00"
-actions:
-  - action: notify.mobile_app_your_phone
-    data:
-      title: 🏒 Frölunda plays in five minutes!
-      message: >-
-        {{ state_attr('sensor.frolunda_hc_next_game', 'home_team') }} –
-        {{ state_attr('sensor.frolunda_hc_next_game', 'away_team') }}
-        · {{ state_attr('sensor.frolunda_hc_next_game', 'venue') }}
-mode: single
-```
-
-Replace `notify.mobile_app_your_phone` with your own notify action.
 
 ## How data is fetched
 

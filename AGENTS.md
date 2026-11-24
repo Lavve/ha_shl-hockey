@@ -55,6 +55,8 @@ custom_components/shl/
   brand/          icon.png, icon@2x.png (own artwork, no SHL logo).
   translations/   en.json (source), sv.json, ...
 scripts/          Manual test scripts that run without Home Assistant.
+examples/         Copy-paste cards (examples/cards) and automations
+                  (examples/automations). Update them when attributes change.
 .github/workflows/validate.yaml   HACS action + hassfest.
 hacs.json         Marketplace metadata (must be in every release).
 ```

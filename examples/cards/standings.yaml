@@ -1,0 +1,55 @@
+# The full standings table with team logos.
+#
+# Requires: flex-table-card (custom:flex-table-card).
+# Team: not needed – the standings sensor covers all teams.
+
+type: custom:flex-table-card
+entities:
+  include:
+    - sensor.shl_standings
+strict: true
+sort_by: rank+
+css:
+  table: |
+    border-collapse: collapse !important;
+    width: 100%
+  th: |
+    padding: 2px 6px;
+  tbody tr:nth-child(odd): |
+    background-color: rgba(255,255,255,0.04);
+  td: |
+    border: 0;
+  img: |
+    display: block;
+    margin: auto;
+    padding: 3px;
+columns:
+  - name: "#"
+    id: rank
+    data: table
+    modify: Number(x.rank)
+    align: center
+  - name: ""
+    data: table
+    modify: |
+      `<img src="${x.logo}" width="40" height="40" />`
+    align: center
+  - name: Team
+    data: table
+    modify: x.name
+  - name: GP
+    data: table
+    modify: x.games_played
+    align: center
+  - name: W / L
+    data: table
+    modify: (x.wins + x.overtime_wins) + ' / ' + (x.losses + x.overtime_losses)
+    align: center
+  - name: +/-
+    data: table
+    modify: x.goal_difference
+    align: center
+  - name: P
+    data: table
+    modify: x.points
+    align: center

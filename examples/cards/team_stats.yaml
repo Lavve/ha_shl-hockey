@@ -1,0 +1,66 @@
+# Team statistics: position, points, goals, record, home/away and form
+# (the last 15 games).
+#
+# Requires: button-card (custom:button-card) and the "Games played" sensor
+# to be enabled (it is disabled by default).
+# Team: replace "frolunda_hc" with your team's entity prefix.
+
+type: custom:button-card
+entity: sensor.frolunda_hc_position
+triggers_update:
+  - sensor.frolunda_hc_games_played
+show_name: false
+show_icon: false
+show_state: false
+tap_action:
+  action: none
+variables:
+  t: |
+    [[[ const s = states['sensor.frolunda_hc_position'];
+        return s ? { rank: s.state, ...s.attributes } : {}; ]]]
+  rec: |
+    [[[
+      const g = (states['sensor.frolunda_hc_games_played']?.attributes?.games || [])
+        .filter(m => m.played);
+      const r = { hw: 0, hl: 0, aw: 0, al: 0, form: [] };
+      for (const m of g) {
+        const won = (m.result || '').endsWith('win');
+        r.form.push(won);
+        if (m.home_game) { won ? r.hw++ : r.hl++; } else { won ? r.aw++ : r.al++; }
+      }
+      return r;
+    ]]]
+custom_fields:
+  rank: |
+    [[[ return `<div class="v">${variables.t.rank}</div><div class="l">Position</div>`; ]]]
+  pts: |
+    [[[ return `<div class="v">${variables.t.points}</div><div class="l">Points · ${variables.t.games_played} GP</div>`; ]]]
+  goals: |
+    [[[ const t = variables.t;
+        return `<div class="v">${t.goals_for}–${t.goals_against}</div><div class="l">Goals (${t.goal_difference > 0 ? '+' : ''}${t.goal_difference})</div>`; ]]]
+  record: |
+    [[[ const t = variables.t;
+        return `<div class="v">${t.wins}-${t.overtime_wins}-${t.overtime_losses}-${t.losses}</div><div class="l">W-OTW-OTL-L</div>`; ]]]
+  home: |
+    [[[ return `<div class="v">${variables.rec.hw}–${variables.rec.hl}</div><div class="l">Home</div>`; ]]]
+  away: |
+    [[[ return `<div class="v">${variables.rec.aw}–${variables.rec.al}</div><div class="l">Away</div>`; ]]]
+  form: |
+    [[[ return `<span class="l">Form</span>` +
+        variables.rec.form.slice(-15).map(w => `<span class="dot ${w ? 'w' : 'x'}"></span>`).join(''); ]]]
+styles:
+  card:
+    - padding: 16px 8px 12px
+  grid:
+    - grid-template-areas: '"rank pts goals" "record home away" "form form form"'
+    - grid-template-columns: repeat(3, 1fr)
+    - grid-template-rows: auto auto auto
+    - row-gap: 16px
+extra_styles: |
+  .v { font-size: 22px; font-weight: 600; line-height: 1.2; }
+  .l { font-size: 12px; color: var(--secondary-text-color); }
+  .dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%;
+         margin: 0 3px; vertical-align: middle; }
+  .dot.w { background: var(--success-color); }
+  .dot.x { background: var(--error-color); }
+  #form .l { margin-right: 6px; vertical-align: middle; }

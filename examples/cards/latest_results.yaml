@@ -1,0 +1,21 @@
+# The five latest results, newest first. Green = win, red = loss
+# (overtime and shootout included).
+#
+# Requires: the "Games played" sensor to be enabled (it is disabled by default).
+# Team: replace "frolunda_hc" with your team's entity prefix.
+
+type: markdown
+content: |
+  {%- set g = (state_attr('sensor.frolunda_hc_games_played', 'games') or [])
+              | selectattr('played') | list -%}
+  <table width="100%">
+  {%- for m in (g | reverse | list)[:5] %}
+  {%- set t = as_local(m.start if m.start is datetime else as_datetime(m.start)) %}
+  <tr>
+  <td width="25%" align="center"><img src="{{ m.home_logo }}" width="36" height="36"><br><sup>{{ m.home_team }}</sup></td>
+  <td align="center"><b>{{ m.home_score }} – {{ m.away_score }}</b><br>
+  <sup>{{ '🟢' if (m.result or '').endswith('win') else '🔴' }} {{ t.strftime('%a %d/%m') }}</sup></td>
+  <td width="25%" align="center"><img src="{{ m.away_logo }}" width="36" height="36"><br><sup>{{ m.away_team }}</sup></td>
+  </tr>
+  {%- endfor %}
+  </table>
