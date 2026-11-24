@@ -126,6 +126,30 @@ content: |
   {% endfor %}
 ```
 
+## Automation example
+
+A notification five minutes before puck drop. The time trigger follows the next game sensor, so it moves to the next game by itself.
+
+```yaml
+alias: Frölunda plays in five minutes
+triggers:
+  - trigger: time
+    at:
+      entity_id: sensor.frolunda_hc_next_game
+      offset: "-00:05:00"
+actions:
+  - action: notify.mobile_app_your_phone
+    data:
+      title: 🏒 Frölunda plays in five minutes!
+      message: >-
+        {{ state_attr('sensor.frolunda_hc_next_game', 'home_team') }} –
+        {{ state_attr('sensor.frolunda_hc_next_game', 'away_team') }}
+        · {{ state_attr('sensor.frolunda_hc_next_game', 'venue') }}
+mode: single
+```
+
+Replace `notify.mobile_app_your_phone` with your own notify action.
+
 ## How data is fetched
 
 The integration only talks to shl.se and tries to be gentle with it. How often
