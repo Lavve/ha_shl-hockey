@@ -50,7 +50,7 @@ Frölunda HC as an example.
 | `sensor.frolunda_hc_next_game` | Start time | The next or ongoing game. |
 | `sensor.frolunda_hc_last_game` | Result | `win`, `loss`, `overtime_win`, `overtime_loss`, `shootout_win` or `shootout_loss`. |
 | `sensor.frolunda_hc_position` | Number | Position in the standings. |
-| `sensor.frolunda_hc_games_played` | Number | Games played this season. All of the season's games in the `games` attribute. |
+| `sensor.frolunda_hc_games_played` | Number | Games played this season. All of the season's games in the `games` attribute. Disabled by default – enable it on the team's device page. |
 
 The **SHL** device has one sensor:
 

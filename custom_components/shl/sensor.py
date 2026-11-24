@@ -5,6 +5,7 @@ Per favorite team (one device per team):
 - last_game  (enum)       result of the last played game
 - position   (int)        position in the standings
 - games      (int)        games played; all of the season's games in attributes
+                          (disabled by default)
 
 League (one "SHL" device):
 - standings               season name, full table in attributes
@@ -213,6 +214,8 @@ TEAM_SENSORS: tuple[ShlTeamSensorDescription, ...] = (
     ShlTeamSensorDescription(
         key="games",
         translation_key="games",
+        # Large attribute, mainly for custom cards: opt-in.
+        entity_registry_enabled_default=False,
         value_fn=lambda v: sum(g.is_played for g in v.games),
         attrs_fn=_games_attrs,
         picture_fn=lambda v: None,
