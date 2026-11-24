@@ -1,0 +1,45 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Select teams",
+        "description": "Choose your favorite teams. Data is fetched from shl.se using an unofficial API.",
+        "data": {
+          "teams": "Favorite teams"
+        },
+        "data_description": {
+          "teams": "Data is fetched more often when these teams play."
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not connect to shl.se. Try again later.",
+      "no_teams": "Select at least one team."
+    },
+    "abort": {
+      "single_instance_allowed": "Already configured. Only a single configuration is possible."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "SHL Hockey options",
+        "data": {
+          "teams": "Favorite teams",
+          "live_interval": "Update interval during games",
+          "matchday_interval": "Update interval on game day",
+          "idle_interval": "Update interval otherwise"
+        },
+        "data_description": {
+          "teams": "Data is fetched more often when these teams play.",
+          "live_interval": "While one of your teams is playing. Minimum 5 minutes.",
+          "matchday_interval": "During the hours before one of your teams plays.",
+          "idle_interval": "When none of your teams play soon."
+        }
+      }
+    },
+    "error": {
+      "no_teams": "Select at least one team."
+    }
+  }
+}

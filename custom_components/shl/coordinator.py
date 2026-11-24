@@ -75,6 +75,11 @@ class ShlCoordinator(DataUpdateCoordinator[ShlData]):
         self._standings_fetched: datetime | None = None
         self._standings_played_count: int | None = None
 
+    @staticmethod
+    async def async_remove_store(hass: HomeAssistant) -> None:
+        """Delete the stored season filter."""
+        await Store(hass, STORAGE_VERSION, STORAGE_KEY).async_remove()
+
     @property
     def favorites(self) -> list[str]:
         """Return the selected team codes."""

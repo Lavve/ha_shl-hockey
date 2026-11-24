@@ -1,0 +1,45 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Välj lag",
+        "description": "Välj dina favoritlag. Data hämtas från shl.se via ett inofficiellt API.",
+        "data": {
+          "teams": "Favoritlag"
+        },
+        "data_description": {
+          "teams": "Data hämtas oftare när de här lagen spelar."
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Kunde inte ansluta till shl.se. Försök igen senare.",
+      "no_teams": "Välj minst ett lag."
+    },
+    "abort": {
+      "single_instance_allowed": "Redan konfigurerad. Endast en konfiguration är möjlig."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Inställningar för SHL Hockey",
+        "data": {
+          "teams": "Favoritlag",
+          "live_interval": "Uppdateringsintervall under match",
+          "matchday_interval": "Uppdateringsintervall på matchdag",
+          "idle_interval": "Uppdateringsintervall i övrigt"
+        },
+        "data_description": {
+          "teams": "Data hämtas oftare när de här lagen spelar.",
+          "live_interval": "När något av dina lag spelar. Minst 5 minuter.",
+          "matchday_interval": "Under timmarna innan något av dina lag spelar.",
+          "idle_interval": "När inget av dina lag spelar inom kort."
+        }
+      }
+    },
+    "error": {
+      "no_teams": "Välj minst ett lag."
+    }
+  }
+}

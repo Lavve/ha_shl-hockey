@@ -1,0 +1,13 @@
+{
+  "domain": "shl",
+  "name": "SHL Hockey (unofficial)",
+  "codeowners": ["@GITHUB_USERNAME"],
+  "config_flow": true,
+  "documentation": "https://github.com/GITHUB_USERNAME/ha_shl-hockey",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/GITHUB_USERNAME/ha_shl-hockey/issues",
+  "requirements": [],
+  "single_config_entry": true,
+  "version": "0.1.0"
+}
