@@ -1,8 +1,12 @@
 {
   "domain": "shl",
   "name": "SHL Hockey (unofficial)",
-  "categories": ["media_entertainment"],
-  "codeowners": ["@Lavve"],
+  "categories": [
+    "media_entertainment"
+  ],
+  "codeowners": [
+    "@Lavve"
+  ],
   "config_flow": true,
   "documentation": "https://github.com/Lavve/ha_shl-hockey",
   "integration_type": "service",
@@ -10,5 +14,5 @@
   "issue_tracker": "https://github.com/Lavve/ha_shl-hockey/issues",
   "requirements": [],
   "single_config_entry": true,
-  "version": "2026.11.0"
+  "version": "2026.11.0b1"
 }
