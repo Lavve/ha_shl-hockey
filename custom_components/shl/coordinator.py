@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, replace
 from datetime import datetime
 import logging
+from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -16,10 +17,15 @@ from .api import ShlApiClient, ShlApiError
 from .const import CONF_TEAMS, DOMAIN, GAME_TYPE_REGULAR, POST_SEASON_GAME_TYPES
 from .models import Game, SeasonFilter, Standing
 from .schedule import (
+    FAILURE_RETRY,
+    HOLD_DATA,
     IDLE_INTERVAL,
+    TABLE_BEHIND_MAX,
+    TABLE_BEHIND_RETRY,
     is_season_finished,
     next_update_delay,
     should_refresh_filter,
+    table_behind,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -60,8 +66,13 @@ class ShlCoordinator(DataUpdateCoordinator[ShlData]):
         self._store: Store[dict] = Store(hass, STORAGE_VERSION, STORAGE_KEY)
         self._season: SeasonFilter | None = None
         self._season_fetched: datetime | None = None
+        self._games_fetched: datetime | None = None
+        self._holding = False  # keeping old data because shl.se failed
         self._standings_fetched: datetime | None = None
         self._standings_played_count: int | None = None
+        self._table_behind: list[str] = []
+        self._table_behind_since: datetime | None = None
+        self._table_behind_played: int | None = None
 
     @staticmethod
     async def async_remove_store(hass: HomeAssistant) -> None:
@@ -87,13 +98,23 @@ class ShlCoordinator(DataUpdateCoordinator[ShlData]):
         now = dt_util.utcnow()
         previous = self.data
 
-        season = await self._async_get_season(now, previous)
-        regular, post_season = await self._async_get_games(season)
+        try:
+            season = await self._async_get_season(now, previous)
+            regular, post_season = await self._async_get_games(season)
+        except ShlApiError as err:
+            return self._hold_or_fail(now, previous, err)
+        if self._holding:
+            _LOGGER.info("shl.se can be read again")
+            self._holding = False
+        self._games_fetched = now
+
         finished = is_season_finished(regular)
         games = sorted(regular + post_season, key=lambda g: g.start)
         standings = await self._async_get_standings(now, season, regular, games, previous)
 
         self.update_interval = next_update_delay(now, games, self.favorites)
+        if self._table_behind:
+            self.update_interval = min(self.update_interval, TABLE_BEHIND_RETRY)
         _LOGGER.debug("Next update in %s", self.update_interval)
 
         return ShlData(
@@ -119,7 +140,7 @@ class ShlCoordinator(DataUpdateCoordinator[ShlData]):
             if self._season:
                 _LOGGER.warning("Using last known season, update failed: %s", err)
                 return self._season
-            raise UpdateFailed(f"Could not fetch season: {err}") from err
+            raise
 
         if self._season and season.season_uuid != self._season.season_uuid:
             _LOGGER.info("New season detected: %s", season.season_name)
@@ -137,26 +158,44 @@ class ShlCoordinator(DataUpdateCoordinator[ShlData]):
         regular_uuid = season.game_types.get(
             GAME_TYPE_REGULAR, season.default_game_type_uuid
         )
-        try:
-            regular = _tag(
-                await self._client.async_get_games(
-                    season.season_uuid, season.series_uuid, regular_uuid
-                ),
-                GAME_TYPE_REGULAR,
-            )
-            post_season: list[Game] = []
-            if is_season_finished(regular):
-                for code in POST_SEASON_GAME_TYPES:
-                    if game_type_uuid := season.game_types.get(code):
-                        post_season += _tag(
-                            await self._client.async_get_games(
-                                season.season_uuid, season.series_uuid, game_type_uuid
-                            ),
-                            code,
-                        )
-        except ShlApiError as err:
-            raise UpdateFailed(f"Could not fetch games: {err}") from err
+        regular = _tag(
+            await self._client.async_get_games(
+                season.season_uuid, season.series_uuid, regular_uuid
+            ),
+            GAME_TYPE_REGULAR,
+        )
+        post_season: list[Game] = []
+        if is_season_finished(regular):
+            for code in POST_SEASON_GAME_TYPES:
+                if game_type_uuid := season.game_types.get(code):
+                    post_season += _tag(
+                        await self._client.async_get_games(
+                            season.season_uuid, season.series_uuid, game_type_uuid
+                        ),
+                        code,
+                    )
         return regular, post_season
+
+    def _hold_or_fail(
+        self, now: datetime, previous: ShlData | None, err: ShlApiError
+    ) -> ShlData:
+        """Keep the last data for a while when shl.se cannot be read."""
+        if (
+            previous is None
+            or self._games_fetched is None
+            or now - self._games_fetched > HOLD_DATA
+        ):
+            raise UpdateFailed(f"Could not fetch data from shl.se: {err}") from err
+        # Warn once per outage; the retries are only logged at debug level.
+        log = _LOGGER.debug if self._holding else _LOGGER.warning
+        log(
+            "Could not read shl.se, keeping data from %s: %s",
+            dt_util.as_local(self._games_fetched).strftime("%Y-%m-%d %H:%M"),
+            err,
+        )
+        self._holding = True
+        self.update_interval = FAILURE_RETRY
+        return previous
 
     async def _async_get_standings(
         self,
@@ -199,7 +238,55 @@ class ShlCoordinator(DataUpdateCoordinator[ShlData]):
 
         self._standings_fetched = now
         self._standings_played_count = played
+        self._check_table_behind(now, standings, regular, played)
         return standings
+
+    def _check_table_behind(
+        self,
+        now: datetime,
+        standings: list[Standing],
+        regular: list[Game],
+        played: int,
+    ) -> None:
+        """Read the table again soon if it is missing finished games."""
+        behind = table_behind(standings, regular)
+        if not behind:
+            if self._table_behind:
+                _LOGGER.debug("The table has caught up")
+            self._table_behind = []
+            self._table_behind_since = None
+            return
+        # The time limit counts from when this game night's results came in.
+        if self._table_behind_since is None or self._table_behind_played != played:
+            self._table_behind_since = now
+            self._table_behind_played = played
+        if now - self._table_behind_since > TABLE_BEHIND_MAX:
+            if self._table_behind:
+                _LOGGER.warning(
+                    "The table is still missing games for %s, giving up until "
+                    "the next game", ", ".join(behind)
+                )
+            self._table_behind = []
+            return
+        _LOGGER.debug("The table is missing games for %s", ", ".join(behind))
+        self._table_behind = behind
+        # Forget the played count, so the next update reads the table again.
+        self._standings_played_count = None
+
+    def diagnostics(self) -> dict[str, Any]:
+        """Return the coordinator's internal state for diagnostics."""
+
+        def iso(value: datetime | None) -> str | None:
+            return value.isoformat() if value else None
+
+        return {
+            "season_fetched": iso(self._season_fetched),
+            "games_fetched": iso(self._games_fetched),
+            "standings_fetched": iso(self._standings_fetched),
+            "holding_old_data": self._holding,
+            "table_behind": self._table_behind,
+            "table_behind_since": iso(self._table_behind_since),
+        }
 
 
 def _tag(games: list[Game], game_type: str) -> list[Game]:

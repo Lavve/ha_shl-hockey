@@ -84,6 +84,21 @@ def main() -> None:
          schedule.is_season_finished([game("FHC", "FBK", -H, "post-game"),
                                       game("FHC", "LHF", H, "pre-game")]), False),
     ]
+    def standing(code: str, gp: int) -> models.Standing:
+        return models.Standing(1, code, code, None, gp, 0, 0, 0, 0, 0, 0, 0)
+
+    played = [game("FHC", "FBK", -H, "post-game"), game("FHC", "LHF", -2 * H, "post-game")]
+    checks += [
+        ("Table: up to date", schedule.table_behind(
+            [standing("FHC", 2), standing("FBK", 1), standing("LHF", 1)], played), []),
+        ("Table: missing tonight's game", schedule.table_behind(
+            [standing("FHC", 1), standing("FBK", 0), standing("LHF", 1)], played), ["FBK", "FHC"]),
+        ("Table: unknown team code is ignored", schedule.table_behind(
+            [standing("FHC", 2), standing("LHF", 1)], played), []),
+        ("Table: upcoming games do not count", schedule.table_behind(
+            [standing("FHC", 0)], [game("FHC", "FBK", H, "pre-game")]), []),
+    ]
+
     for name, got, expected in checks:
         ok = got == expected
         failed += not ok

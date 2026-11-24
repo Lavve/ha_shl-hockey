@@ -50,6 +50,7 @@ custom_components/shl/
   __init__.py     Setup / unload of the config entry.
   config_flow.py  Config flow + options flow.
   sensor.py       Entities.
+  diagnostics.py  Download diagnostics (last data, next update, table state).
   manifest.json
   icons.json      Entity icons (by translation_key).
   brand/          icon.png, icon@2x.png (own artwork, no SHL logo).
