@@ -37,6 +37,11 @@
     }
   },
   "entity": {
+    "calendar": {
+      "games": {
+        "name": "Matcher"
+      }
+    },
     "sensor": {
       "next_game": {
         "name": "Nästa match",

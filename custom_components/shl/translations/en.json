@@ -37,6 +37,11 @@
     }
   },
   "entity": {
+    "calendar": {
+      "games": {
+        "name": "Games"
+      }
+    },
     "sensor": {
       "next_game": {
         "name": "Next game",

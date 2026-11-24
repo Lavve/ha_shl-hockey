@@ -32,6 +32,7 @@ device page under **Settings → Devices & services → SHL Hockey**.
 | File | Does |
 |---|---|
 | [game_notification.yaml](automations/game_notification.yaml) | A notification five minutes before puck drop |
+| [game_notification_calendar.yaml](automations/game_notification_calendar.yaml) | The same, with the calendar trigger – no templates needed |
 
 ## Language and formats
 

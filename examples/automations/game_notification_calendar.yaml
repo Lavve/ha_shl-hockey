@@ -1,0 +1,23 @@
+# A notification five minutes before puck drop, using the team's calendar.
+# The calendar trigger has a built-in offset, so no templates are needed
+# for the timing; the event's summary already says who plays.
+#
+# Requires: nothing.
+# Team: replace "frolunda_hc" with your team's entity prefix.
+# Notify: replace "notify.mobile_app_your_phone" with your own notify action.
+
+alias: Frölunda plays in five minutes (calendar)
+description: Notification five minutes before puck drop.
+triggers:
+  - trigger: calendar
+    event: start
+    offset: "-0:05:00"
+    entity_id: calendar.frolunda_hc_games
+actions:
+  - action: notify.mobile_app_your_phone
+    data:
+      title: 🏒 Frölunda plays in five minutes!
+      message: >-
+        {{ trigger.calendar_event.summary }}
+        · {{ trigger.calendar_event.location }}
+mode: single
