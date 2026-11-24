@@ -101,6 +101,9 @@ Home Assistant imports so they can be tested with the scripts in `scripts/`.
 
 ## Releases
 
+- Versioning: CalVer `YYYY.MM.PATCH`, like Home Assistant itself, e.g.
+  `2026.11.0`, `2026.11.1`, `2026.12.0`. PATCH starts at 0 every month.
+  No leading zeros (`2026.11.1`, not `2026.11.01`).
 - Publish a **GitHub release** (a tag alone is not enough).
 - The tag must equal `version` in `manifest.json` (and `VERSION` in
   `const.py`, used in the User-Agent).
