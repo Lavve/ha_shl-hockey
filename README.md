@@ -8,6 +8,14 @@ Swedish Hockey League (SHL) for your favorite teams.
 > shl.se's public but **unofficial** API, which may change or stop working at
 > any time. All data belongs to SHL.
 
+<p align="center">
+  <img src="images/unplayed.png" alt="Next game and upcoming games" width="32%" align="top">
+  <img src="images/played.png" alt="Latest results" width="32%" align="top">
+  <img src="images/table.png" alt="Standings" width="32%" align="top">
+</p>
+
+<sub>Example dashboard built with Markdown and flex-table cards using this integration's sensors. The cards themselves are not part of the integration – see [Dashboard examples](#dashboard-examples).</sub>
+
 ## Features
 
 - Pick one or more favorite teams.
