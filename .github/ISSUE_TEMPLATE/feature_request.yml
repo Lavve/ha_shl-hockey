@@ -1,0 +1,27 @@
+name: Feature request
+description: Suggest an idea or improvement.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please keep in mind that this integration intentionally does **not** offer live scores or more frequent polling, to be gentle with shl.se.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What would you like to do?
+      description: Describe what you want to achieve, e.g. a dashboard card or an automation.
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Suggested solution
+      description: A new sensor, attribute or something else?
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context

@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://github.com/Lavve/ha_shl-hockey#readme
+    about: Entities, attributes, dashboard examples and how data is fetched.
+  - name: Add a translation
+    url: https://github.com/Lavve/ha_shl-hockey/blob/main/CONTRIBUTING.md#add-or-improve-a-translation
+    about: New languages are added with a pull request.

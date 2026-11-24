@@ -1,0 +1,76 @@
+name: Bug report
+description: Something is not working as expected.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a problem!
+        This integration uses shl.se's unofficial API. If **all** sensors suddenly stop updating, shl.se may have changed something – please still report it.
+
+  - type: input
+    id: ha_version
+    attributes:
+      label: Home Assistant version
+      description: Settings → About
+      placeholder: "2026.11.2"
+    validations:
+      required: true
+
+  - type: input
+    id: integration_version
+    attributes:
+      label: Integration version
+      description: Settings → Devices & services → SHL Hockey
+      placeholder: "2026.11.0b1"
+    validations:
+      required: true
+
+  - type: input
+    id: teams
+    attributes:
+      label: Favorite teams
+      placeholder: "Frölunda HC, Luleå Hockey"
+    validations:
+      required: true
+
+  - type: input
+    id: entity
+    attributes:
+      label: Affected entity
+      description: The entity ID, if the problem is with a specific sensor.
+      placeholder: "sensor.frolunda_hc_next_game"
+
+  - type: textarea
+    id: what_happened
+    attributes:
+      label: What happened?
+      description: If it is about a specific game, please include the teams and date.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Debug log
+      description: |
+        Turn on **Enable debug logging** on the integration page, wait for the problem to happen, then turn it off – the log is downloaded.
+        Paste the lines containing `custom_components.shl`.
+      render: text
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I am using the latest version (or the latest beta).
+          required: true
+        - label: I have searched existing issues.
+          required: true
