@@ -4,6 +4,7 @@ Per favorite team (one device per team):
 - next_game  (timestamp)  next or ongoing game
 - last_game  (enum)       result of the last played game
 - position   (int)        position in the standings
+- games      (int)        games played; all of the season's games in attributes
 
 League (one "SHL" device):
 - standings               season name, full table in attributes
@@ -53,6 +54,7 @@ class TeamView:
     """The coordinator data seen from one team."""
 
     code: str
+    games: list[Game]
     next_game: Game | None
     last_game: Game | None
     standing: Standing | None
@@ -63,6 +65,7 @@ class TeamView:
         games = [g for g in data.games if g.involves(code)]
         return cls(
             code=code,
+            games=games,
             next_game=next((g for g in games if not g.is_played), None),
             last_game=next((g for g in reversed(games) if g.is_played), None),
             standing=next((s for s in data.standings if s.team_code == code), None),
@@ -115,7 +118,14 @@ def _result(view: TeamView) -> str | None:
     """Return the last game's result from the team's point of view."""
     if (game := view.last_game) is None:
         return None
-    us, them = _sides(game, view.code)
+    return _game_result(game, view.code)
+
+
+def _game_result(game: Game, code: str) -> str | None:
+    """Return a played game's result from the team's point of view."""
+    if not game.is_played:
+        return None
+    us, them = _sides(game, code)
     if us.score is None or them.score is None:
         return None
     outcome = "win" if us.score > them.score else "loss"
@@ -132,6 +142,31 @@ def _sides(game: Game, code: str) -> tuple[GameTeam, GameTeam]:
 
 def _opponent_logo(game: Game | None, code: str) -> str | None:
     return _sides(game, code)[1].logo if game else None
+
+
+def _games_attrs(view: TeamView) -> dict[str, Any]:
+    """All of the season's games, played and upcoming, oldest first."""
+    return {
+        "games": [
+            {
+                "start": g.start,
+                "game_type": g.game_type,
+                "played": g.is_played,
+                "result": _game_result(g, view.code),
+                "home_game": g.home.code == view.code,
+                "home_code": g.home.code,
+                "away_code": g.away.code,
+                "home_team": g.home.name,
+                "away_team": g.away.name,
+                "home_logo": g.home.logo,
+                "away_logo": g.away.logo,
+                "home_score": g.home.score,
+                "away_score": g.away.score,
+                "venue": g.venue,
+            }
+            for g in view.games
+        ]
+    }
 
 
 def _position_attrs(view: TeamView) -> dict[str, Any] | None:
@@ -175,6 +210,13 @@ TEAM_SENSORS: tuple[ShlTeamSensorDescription, ...] = (
         attrs_fn=_position_attrs,
         picture_fn=lambda v: v.standing.logo if v.standing else None,
     ),
+    ShlTeamSensorDescription(
+        key="games",
+        translation_key="games",
+        value_fn=lambda v: sum(g.is_played for g in v.games),
+        attrs_fn=_games_attrs,
+        picture_fn=lambda v: None,
+    ),
 )
 
 
@@ -198,6 +240,8 @@ class ShlTeamSensor(CoordinatorEntity[ShlCoordinator], SensorEntity):
     """A sensor for one favorite team."""
 
     _attr_has_entity_name = True
+    # The game list is large; keep it out of the database.
+    _unrecorded_attributes = frozenset({"games"})
     entity_description: ShlTeamSensorDescription
 
     def __init__(

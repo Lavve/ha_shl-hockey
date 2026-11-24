@@ -50,6 +50,7 @@ class Game:
     ssgt_uuid: str | None
     round_number: int | None
     round_label: str | None
+    game_type: str | None = None  # "regular", "playoff", ... set by the coordinator
 
     @property
     def is_played(self) -> bool:

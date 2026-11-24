@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from datetime import datetime
 import logging
 
@@ -138,15 +138,21 @@ class ShlCoordinator(DataUpdateCoordinator[ShlData]):
             GAME_TYPE_REGULAR, season.default_game_type_uuid
         )
         try:
-            regular = await self._client.async_get_games(
-                season.season_uuid, season.series_uuid, regular_uuid
+            regular = _tag(
+                await self._client.async_get_games(
+                    season.season_uuid, season.series_uuid, regular_uuid
+                ),
+                GAME_TYPE_REGULAR,
             )
             post_season: list[Game] = []
             if is_season_finished(regular):
                 for code in POST_SEASON_GAME_TYPES:
                     if game_type_uuid := season.game_types.get(code):
-                        post_season += await self._client.async_get_games(
-                            season.season_uuid, season.series_uuid, game_type_uuid
+                        post_season += _tag(
+                            await self._client.async_get_games(
+                                season.season_uuid, season.series_uuid, game_type_uuid
+                            ),
+                            code,
                         )
         except ShlApiError as err:
             raise UpdateFailed(f"Could not fetch games: {err}") from err
@@ -195,3 +201,7 @@ class ShlCoordinator(DataUpdateCoordinator[ShlData]):
         self._standings_played_count = played
         return standings
 
+
+def _tag(games: list[Game], game_type: str) -> list[Game]:
+    """Set the game type on each game."""
+    return [replace(g, game_type=game_type) for g in games]

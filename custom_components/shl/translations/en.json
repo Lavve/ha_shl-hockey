@@ -152,6 +152,14 @@
           }
         }
       },
+      "games": {
+        "name": "Games played",
+        "state_attributes": {
+          "games": {
+            "name": "Games"
+          }
+        }
+      },
       "standings": {
         "name": "Standings",
         "state_attributes": {

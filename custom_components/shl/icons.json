@@ -12,6 +12,9 @@
       },
       "standings": {
         "default": "mdi:format-list-numbered"
+      },
+      "games": {
+        "default": "mdi:hockey-sticks"
       }
     }
   }

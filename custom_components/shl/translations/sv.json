@@ -152,6 +152,14 @@
           }
         }
       },
+      "games": {
+        "name": "Spelade matcher",
+        "state_attributes": {
+          "games": {
+            "name": "Matcher"
+          }
+        }
+      },
       "standings": {
         "name": "Tabell",
         "state_attributes": {

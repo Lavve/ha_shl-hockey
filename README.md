@@ -42,7 +42,7 @@ Or go to **Settings → Devices & services → Add integration** and search for
 
 ## Entities
 
-Each favorite team gets its own device with three sensors. Entity IDs below use
+Each favorite team gets its own device with four sensors. Entity IDs below use
 Frölunda HC as an example.
 
 | Entity | State | Description |
@@ -50,6 +50,7 @@ Frölunda HC as an example.
 | `sensor.frolunda_hc_next_game` | Start time | The next or ongoing game. |
 | `sensor.frolunda_hc_last_game` | Result | `win`, `loss`, `overtime_win`, `overtime_loss`, `shootout_win` or `shootout_loss`. |
 | `sensor.frolunda_hc_position` | Number | Position in the standings. |
+| `sensor.frolunda_hc_games_played` | Number | Games played this season. All of the season's games in the `games` attribute. |
 
 The **SHL** device has one sensor:
 
@@ -68,6 +69,13 @@ The **SHL** device has one sensor:
 
 **Position:** `points`, `games_played`, `wins`, `overtime_wins`,
 `overtime_losses`, `losses`, `goals_for`, `goals_against`, `goal_difference`
+
+**Games played:** `games` – all of the team's games this season, played and
+upcoming, oldest first. Each game has `start`, `game_type` (`regular`,
+`playoff`, `qualdown`), `played`, `result` (as for the last game, `null` if not
+played), `home_game`, `home_code`, `away_code`, `home_team`, `away_team`,
+`home_logo`, `away_logo`, `home_score`, `away_score` and `venue`. The list is
+not saved in the recorder database.
 
 **Standings:** `table` – a list with one item per team containing `rank`,
 `team_code`, `name`, `logo` and the same numbers as the position sensor. The
@@ -96,6 +104,17 @@ content: |
   |--:|:--|--:|--:|--:|
   {% for r in state_attr('sensor.shl_standings', 'table') or [] -%}
   | {{ r.rank }} | {{ r.name }} | {{ r.games_played }} | {{ r.goal_difference }} | {{ r.points }} |
+  {% endfor %}
+```
+
+The last five results, newest first:
+
+```yaml
+type: markdown
+content: |
+  {% set games = state_attr('sensor.frolunda_hc_games_played', 'games') or [] %}
+  {% for g in (games | selectattr('played') | list | reverse | list)[:5] -%}
+  {{ g.home_team }} {{ g.home_score }}–{{ g.away_score }} {{ g.away_team }}
   {% endfor %}
 ```
 
