@@ -16,6 +16,7 @@ from homeassistant.util import dt as dt_util
 from .api import ShlApiClient, ShlApiError
 from .const import CONF_TEAMS, DOMAIN, GAME_TYPE_REGULAR, POST_SEASON_GAME_TYPES
 from .models import Game, SeasonFilter, Standing
+from .table import standings_from_games
 from .schedule import (
     FAILURE_RETRY,
     HOLD_DATA,
@@ -44,6 +45,7 @@ class ShlData:
     games: list[Game]  # regular season, plus post-season when relevant
     standings: list[Standing]  # always the regular season table
     season_finished: bool  # all regular season games played
+    standings_source: str = "official"  # or "calculated" while SHL's lags
 
 
 class ShlCoordinator(DataUpdateCoordinator[ShlData]):
@@ -73,6 +75,7 @@ class ShlCoordinator(DataUpdateCoordinator[ShlData]):
         self._table_behind: list[str] = []
         self._table_behind_since: datetime | None = None
         self._table_behind_played: int | None = None
+        self._standings_source = "official"
 
     @staticmethod
     async def async_remove_store(hass: HomeAssistant) -> None:
@@ -122,6 +125,7 @@ class ShlCoordinator(DataUpdateCoordinator[ShlData]):
             games=games,
             standings=standings,
             season_finished=finished,
+            standings_source=self._standings_source,
         )
 
     async def _async_get_season(
@@ -239,6 +243,12 @@ class ShlCoordinator(DataUpdateCoordinator[ShlData]):
         self._standings_fetched = now
         self._standings_played_count = played
         self._check_table_behind(now, standings, regular, played)
+        if self._table_behind:
+            # Show the right table at once; the official one takes over
+            # when it has caught up.
+            self._standings_source = "calculated"
+            return standings_from_games(regular, standings)
+        self._standings_source = "official"
         return standings
 
     def _check_table_behind(
@@ -285,6 +295,7 @@ class ShlCoordinator(DataUpdateCoordinator[ShlData]):
             "standings_fetched": iso(self._standings_fetched),
             "holding_old_data": self._holding,
             "table_behind": self._table_behind,
+            "standings_source": self._standings_source,
             "table_behind_since": iso(self._table_behind_since),
         }
 

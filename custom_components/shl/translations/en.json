@@ -163,6 +163,13 @@
       "standings": {
         "name": "Standings",
         "state_attributes": {
+          "source": {
+            "name": "Source",
+            "state": {
+              "official": "SHL",
+              "calculated": "Calculated from results"
+            }
+          },
           "table": {
             "name": "Table"
           }

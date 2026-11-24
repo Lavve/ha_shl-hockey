@@ -46,6 +46,7 @@ custom_components/shl/
   models.py       Dataclasses (raw values). No Home Assistant imports.
   api.py          shl.se client + parsing. No Home Assistant imports.
   schedule.py     Polling rules (pure functions). No Home Assistant imports.
+  table.py        Standings calculated from results. No Home Assistant imports.
   coordinator.py  DataUpdateCoordinator – uses api.py and schedule.py.
   __init__.py     Setup / unload of the config entry.
   config_flow.py  Config flow + options flow.
@@ -62,7 +63,7 @@ examples/         Copy-paste cards (examples/cards) and automations
 hacs.json         Marketplace metadata (must be in every release).
 ```
 
-`const.py`, `models.py`, `api.py` and `schedule.py` must stay free of
+`const.py`, `models.py`, `api.py`, `schedule.py` and `table.py` must stay free of
 Home Assistant imports so they can be tested with the scripts in `scripts/`.
 
 ## Code conventions

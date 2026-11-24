@@ -163,6 +163,13 @@
       "standings": {
         "name": "Tabell",
         "state_attributes": {
+          "source": {
+            "name": "Källa",
+            "state": {
+              "official": "SHL",
+              "calculated": "Uträknad från resultaten"
+            }
+          },
           "table": {
             "name": "Tabell"
           }

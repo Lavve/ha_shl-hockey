@@ -315,6 +315,7 @@ class ShlStandingsSensor(CoordinatorEntity[ShlCoordinator], SensorEntity):
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return the table."""
         return {
+            "source": self.coordinator.data.standings_source,
             "table": [
                 {
                     "rank": s.rank,
