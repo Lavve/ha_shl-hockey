@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 import logging
 
 from homeassistant.config_entries import ConfigEntry
@@ -13,21 +13,10 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from homeassistant.util import dt as dt_util
 
 from .api import ShlApiClient, ShlApiError
-from .const import (
-    CONF_IDLE_INTERVAL,
-    CONF_LIVE_INTERVAL,
-    CONF_MATCHDAY_INTERVAL,
-    CONF_TEAMS,
-    DEFAULT_IDLE_INTERVAL,
-    DEFAULT_LIVE_INTERVAL,
-    DEFAULT_MATCHDAY_INTERVAL,
-    DOMAIN,
-    GAME_TYPE_REGULAR,
-    POST_SEASON_GAME_TYPES,
-)
+from .const import CONF_TEAMS, DOMAIN, GAME_TYPE_REGULAR, POST_SEASON_GAME_TYPES
 from .models import Game, SeasonFilter, Standing
 from .schedule import (
-    Intervals,
+    IDLE_INTERVAL,
     is_season_finished,
     next_update_delay,
     should_refresh_filter,
@@ -60,13 +49,12 @@ class ShlCoordinator(DataUpdateCoordinator[ShlData]):
         self, hass: HomeAssistant, entry: ShlConfigEntry, client: ShlApiClient
     ) -> None:
         """Initialize the coordinator."""
-        intervals = _intervals_from_options(entry)
         super().__init__(
             hass,
             _LOGGER,
             config_entry=entry,
             name=DOMAIN,
-            update_interval=intervals.idle,  # replaced after each update
+            update_interval=IDLE_INTERVAL,  # replaced after each update
         )
         self._client = client
         self._store: Store[dict] = Store(hass, STORAGE_VERSION, STORAGE_KEY)
@@ -105,8 +93,7 @@ class ShlCoordinator(DataUpdateCoordinator[ShlData]):
         games = sorted(regular + post_season, key=lambda g: g.start)
         standings = await self._async_get_standings(now, season, regular, games, previous)
 
-        intervals = _intervals_from_options(self.config_entry)
-        self.update_interval = next_update_delay(now, games, self.favorites, intervals)
+        self.update_interval = next_update_delay(now, games, self.favorites)
         _LOGGER.debug("Next update in %s", self.update_interval)
 
         return ShlData(
@@ -179,13 +166,12 @@ class ShlCoordinator(DataUpdateCoordinator[ShlData]):
         unless the number of played games changed or the data is getting old.
         """
         played = sum(g.is_played for g in games)
-        intervals = _intervals_from_options(self.config_entry)
         if (
             previous
             and previous.standings
             and self._standings_fetched is not None
             and played == self._standings_played_count
-            and now - self._standings_fetched < intervals.idle
+            and now - self._standings_fetched < IDLE_INTERVAL
         ):
             return previous.standings
 
@@ -209,15 +195,3 @@ class ShlCoordinator(DataUpdateCoordinator[ShlData]):
         self._standings_played_count = played
         return standings
 
-
-def _intervals_from_options(entry: ConfigEntry) -> Intervals:
-    options = entry.options
-    return Intervals(
-        live=timedelta(
-            minutes=options.get(CONF_LIVE_INTERVAL, DEFAULT_LIVE_INTERVAL)
-        ),
-        matchday=timedelta(
-            minutes=options.get(CONF_MATCHDAY_INTERVAL, DEFAULT_MATCHDAY_INTERVAL)
-        ),
-        idle=timedelta(hours=options.get(CONF_IDLE_INTERVAL, DEFAULT_IDLE_INTERVAL)),
-    )

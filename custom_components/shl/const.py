@@ -36,15 +36,6 @@ POST_SEASON_GAME_TYPES: Final = (GAME_TYPE_PLAYOFF, GAME_TYPE_QUALDOWN)
 # --- Config entry options ---------------------------------------------------
 
 CONF_TEAMS: Final = "teams"
-CONF_LIVE_INTERVAL: Final = "live_interval"  # minutes
-CONF_MATCHDAY_INTERVAL: Final = "matchday_interval"  # minutes
-CONF_IDLE_INTERVAL: Final = "idle_interval"  # hours
-
-DEFAULT_LIVE_INTERVAL: Final = 5
-DEFAULT_MATCHDAY_INTERVAL: Final = 30
-DEFAULT_IDLE_INTERVAL: Final = 8
-
-MIN_INTERVAL_MINUTES: Final = 5  # hard floor, never poll more often
 
 # --- Game states (as returned by game-schedule) ---------------------------
 # Only "pre-game" and "post-game" have been observed. Anything else is

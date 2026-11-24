@@ -15,9 +15,6 @@ from homeassistant.config_entries import (
 from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.selector import (
-    NumberSelector,
-    NumberSelectorConfig,
-    NumberSelectorMode,
     SelectOptionDict,
     SelectSelector,
     SelectSelectorConfig,
@@ -25,27 +22,11 @@ from homeassistant.helpers.selector import (
 )
 
 from .api import ShlApiClient, ShlApiError
-from .const import (
-    CONF_IDLE_INTERVAL,
-    CONF_LIVE_INTERVAL,
-    CONF_MATCHDAY_INTERVAL,
-    CONF_TEAMS,
-    DEFAULT_IDLE_INTERVAL,
-    DEFAULT_LIVE_INTERVAL,
-    DEFAULT_MATCHDAY_INTERVAL,
-    DOMAIN,
-    MIN_INTERVAL_MINUTES,
-)
+from .const import CONF_TEAMS, DOMAIN
 from .coordinator import ShlConfigEntry
 from .models import Standing
 
 _LOGGER = logging.getLogger(__name__)
-
-DEFAULT_OPTIONS: dict[str, Any] = {
-    CONF_LIVE_INTERVAL: DEFAULT_LIVE_INTERVAL,
-    CONF_MATCHDAY_INTERVAL: DEFAULT_MATCHDAY_INTERVAL,
-    CONF_IDLE_INTERVAL: DEFAULT_IDLE_INTERVAL,
-}
 
 
 class ShlConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -68,7 +49,7 @@ class ShlConfigFlow(ConfigFlow, domain=DOMAIN):
                 return self.async_create_entry(
                     title="SHL",
                     data={},
-                    options={**DEFAULT_OPTIONS, CONF_TEAMS: user_input[CONF_TEAMS]},
+                    options={CONF_TEAMS: user_input[CONF_TEAMS]},
                 )
             errors[CONF_TEAMS] = "no_teams"
 
@@ -101,24 +82,18 @@ class ShlConfigFlow(ConfigFlow, domain=DOMAIN):
 
 
 class ShlOptionsFlow(OptionsFlowWithReload):
-    """Change teams and polling intervals. Reloads the entry on save."""
+    """Change favorite teams. Reloads the entry on save."""
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Show the options form."""
         errors: dict[str, str] = {}
-        options = {**DEFAULT_OPTIONS, **self.config_entry.options}
+        options = {**self.config_entry.options}
 
         if user_input is not None:
             if user_input.get(CONF_TEAMS):
-                # Number selectors return floats; store whole numbers.
-                return self.async_create_entry(
-                    data={
-                        key: int(value) if isinstance(value, float) else value
-                        for key, value in user_input.items()
-                    }
-                )
+                return self.async_create_entry(data=user_input)
             errors[CONF_TEAMS] = "no_teams"
             options.update(user_input)
 
@@ -130,14 +105,7 @@ class ShlOptionsFlow(OptionsFlowWithReload):
             for code in options.get(CONF_TEAMS, [])
         ]
 
-        schema = vol.Schema(
-            {
-                vol.Required(CONF_TEAMS): _team_selector(teams),
-                vol.Required(CONF_LIVE_INTERVAL): _number(MIN_INTERVAL_MINUTES, 60, 5, "min"),
-                vol.Required(CONF_MATCHDAY_INTERVAL): _number(MIN_INTERVAL_MINUTES, 120, 5, "min"),
-                vol.Required(CONF_IDLE_INTERVAL): _number(1, 24, 1, "h"),
-            }
-        )
+        schema = vol.Schema({vol.Required(CONF_TEAMS): _team_selector(teams)})
         return self.async_show_form(
             step_id="init",
             data_schema=self.add_suggested_values_to_schema(schema, options),
@@ -160,14 +128,3 @@ def _team_selector(teams: list[SelectOptionDict]) -> SelectSelector:
         )
     )
 
-
-def _number(minimum: int, maximum: int, step: int, unit: str) -> NumberSelector:
-    return NumberSelector(
-        NumberSelectorConfig(
-            min=minimum,
-            max=maximum,
-            step=step,
-            unit_of_measurement=unit,
-            mode=NumberSelectorMode.BOX,
-        )
-    )

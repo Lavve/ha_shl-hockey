@@ -22,7 +22,6 @@ schedule = importlib.import_module("shl.schedule")
 
 NOW = datetime(2026, 11, 24, 12, 0, tzinfo=UTC)
 FAV = ["FHC"]
-INTERVALS = schedule.Intervals()
 
 
 def game(home: str, away: str, start: timedelta, state: str) -> models.Game:
@@ -66,7 +65,7 @@ CASES: list[tuple[str, list, timedelta]] = [
 def main() -> None:
     failed = 0
     for name, games, expected in CASES:
-        got = schedule.next_update_delay(NOW, games, FAV, INTERVALS)
+        got = schedule.next_update_delay(NOW, games, FAV)
         ok = got == expected
         failed += not ok
         print(f"{'OK  ' if ok else 'FAIL'} {name:<48} {got!s:>9} (expected {expected})")

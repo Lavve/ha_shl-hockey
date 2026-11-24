@@ -25,16 +25,10 @@
       "init": {
         "title": "SHL Hockey options",
         "data": {
-          "teams": "Favorite teams",
-          "live_interval": "Update interval during games",
-          "matchday_interval": "Update interval on game day",
-          "idle_interval": "Update interval otherwise"
+          "teams": "Favorite teams"
         },
         "data_description": {
-          "teams": "Data is fetched more often when these teams play.",
-          "live_interval": "While one of your teams is playing. Minimum 5 minutes.",
-          "matchday_interval": "During the hours before one of your teams plays.",
-          "idle_interval": "When none of your teams play soon."
+          "teams": "Data is fetched more often when these teams play."
         }
       }
     },

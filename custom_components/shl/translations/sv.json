@@ -25,16 +25,10 @@
       "init": {
         "title": "Inställningar för SHL Hockey",
         "data": {
-          "teams": "Favoritlag",
-          "live_interval": "Uppdateringsintervall under match",
-          "matchday_interval": "Uppdateringsintervall på matchdag",
-          "idle_interval": "Uppdateringsintervall i övrigt"
+          "teams": "Favoritlag"
         },
         "data_description": {
-          "teams": "Data hämtas oftare när de här lagen spelar.",
-          "live_interval": "När något av dina lag spelar. Minst 5 minuter.",
-          "matchday_interval": "Under timmarna innan något av dina lag spelar.",
-          "idle_interval": "När inget av dina lag spelar inom kort."
+          "teams": "Data hämtas oftare när de här lagen spelar."
         }
       }
     },

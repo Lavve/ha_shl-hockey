@@ -18,8 +18,11 @@ treat it with care.
 1. **Keep it simple.** Do not add features, abstractions or files that are not
    needed now.
 2. **Be gentle with shl.se.**
-   - Never poll more often than every 5 minutes (`MIN_INTERVAL_MINUTES`).
+   - Never poll more often than every 5 minutes (`MIN_INTERVAL`).
    - No live updates. Adaptive polling only (see `schedule.py`).
+   - Polling intervals are not user-configurable (Home Assistant guideline).
+     Users who want manual control can disable polling and call
+     `homeassistant.update_entity`.
    - One coordinator per installation (`single_config_entry`), one request per
      endpoint regardless of how many teams are selected.
    - Always send our own `User-Agent`.
