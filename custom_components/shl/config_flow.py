@@ -47,7 +47,7 @@ class ShlConfigFlow(ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             if user_input.get(CONF_TEAMS):
                 return self.async_create_entry(
-                    title="SHL",
+                    title="SHL Hockey",
                     data={},
                     options={CONF_TEAMS: user_input[CONF_TEAMS]},
                 )
