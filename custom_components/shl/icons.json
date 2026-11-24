@@ -1,0 +1,18 @@
+{
+  "entity": {
+    "sensor": {
+      "next_game": {
+        "default": "mdi:calendar-clock"
+      },
+      "last_game": {
+        "default": "mdi:scoreboard"
+      },
+      "position": {
+        "default": "mdi:podium"
+      },
+      "standings": {
+        "default": "mdi:format-list-numbered"
+      }
+    }
+  }
+}

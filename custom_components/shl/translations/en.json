@@ -35,5 +35,131 @@
     "error": {
       "no_teams": "Select at least one team."
     }
+  },
+  "entity": {
+    "sensor": {
+      "next_game": {
+        "name": "Next game",
+        "state_attributes": {
+          "status": {
+            "name": "Status",
+            "state": {
+              "upcoming": "Upcoming",
+              "in_progress": "In progress"
+            }
+          },
+          "opponent": {
+            "name": "Opponent"
+          },
+          "opponent_logo": {
+            "name": "Opponent logo"
+          },
+          "home_game": {
+            "name": "Home game"
+          },
+          "venue": {
+            "name": "Venue"
+          },
+          "home_team": {
+            "name": "Home team"
+          },
+          "away_team": {
+            "name": "Away team"
+          },
+          "home_logo": {
+            "name": "Home team logo"
+          },
+          "away_logo": {
+            "name": "Away team logo"
+          }
+        }
+      },
+      "last_game": {
+        "name": "Last game",
+        "state": {
+          "win": "Win",
+          "loss": "Loss",
+          "overtime_win": "Overtime win",
+          "overtime_loss": "Overtime loss",
+          "shootout_win": "Shootout win",
+          "shootout_loss": "Shootout loss"
+        },
+        "state_attributes": {
+          "start": {
+            "name": "Start"
+          },
+          "opponent": {
+            "name": "Opponent"
+          },
+          "opponent_logo": {
+            "name": "Opponent logo"
+          },
+          "home_game": {
+            "name": "Home game"
+          },
+          "venue": {
+            "name": "Venue"
+          },
+          "home_team": {
+            "name": "Home team"
+          },
+          "away_team": {
+            "name": "Away team"
+          },
+          "home_logo": {
+            "name": "Home team logo"
+          },
+          "away_logo": {
+            "name": "Away team logo"
+          },
+          "home_score": {
+            "name": "Home score"
+          },
+          "away_score": {
+            "name": "Away score"
+          }
+        }
+      },
+      "position": {
+        "name": "Position",
+        "state_attributes": {
+          "points": {
+            "name": "Points"
+          },
+          "games_played": {
+            "name": "Games played"
+          },
+          "wins": {
+            "name": "Wins"
+          },
+          "overtime_wins": {
+            "name": "Overtime wins"
+          },
+          "overtime_losses": {
+            "name": "Overtime losses"
+          },
+          "losses": {
+            "name": "Losses"
+          },
+          "goals_for": {
+            "name": "Goals for"
+          },
+          "goals_against": {
+            "name": "Goals against"
+          },
+          "goal_difference": {
+            "name": "Goal difference"
+          }
+        }
+      },
+      "standings": {
+        "name": "Standings",
+        "state_attributes": {
+          "table": {
+            "name": "Table"
+          }
+        }
+      }
+    }
   }
 }

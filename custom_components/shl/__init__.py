@@ -4,13 +4,14 @@ from __future__ import annotations
 
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import ShlApiClient
+from .const import DOMAIN, LEAGUE_DEVICE_ID
 from .coordinator import ShlConfigEntry, ShlCoordinator
 
-# Sensors are added in the next step.
-PLATFORMS: list[Platform] = []
+PLATFORMS: list[Platform] = [Platform.SENSOR]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ShlConfigEntry) -> bool:
@@ -20,8 +21,22 @@ async def async_setup_entry(hass: HomeAssistant, entry: ShlConfigEntry) -> bool:
     await coordinator.async_config_entry_first_refresh()
 
     entry.runtime_data = coordinator
+    _remove_unselected_teams(hass, entry, coordinator.favorites)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
+
+
+def _remove_unselected_teams(
+    hass: HomeAssistant, entry: ShlConfigEntry, favorites: list[str]
+) -> None:
+    """Remove devices for teams that are no longer favorites."""
+    keep = {(DOMAIN, code) for code in favorites} | {(DOMAIN, LEAGUE_DEVICE_ID)}
+    registry = dr.async_get(hass)
+    for device in dr.async_entries_for_config_entry(registry, entry.entry_id):
+        if not device.identifiers & keep:
+            registry.async_update_device(
+                device.id, remove_config_entry_id=entry.entry_id
+            )
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ShlConfigEntry) -> bool:

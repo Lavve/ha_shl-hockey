@@ -10,6 +10,8 @@ from typing import Final
 
 DOMAIN: Final = "shl"
 VERSION: Final = "0.1.0"
+SHL_URL: Final = "https://www.shl.se"
+LEAGUE_DEVICE_ID: Final = "league"
 
 # --- shl.se (unofficial API) ---------------------------------------------
 

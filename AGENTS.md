@@ -51,6 +51,7 @@ custom_components/shl/
   config_flow.py  Config flow + options flow.
   sensor.py       Entities.
   manifest.json
+  icons.json      Entity icons (by translation_key).
   translations/   en.json (source), sv.json, ...
 scripts/          Manual test scripts that run without Home Assistant.
 ```

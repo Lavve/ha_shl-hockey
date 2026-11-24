@@ -35,5 +35,131 @@
     "error": {
       "no_teams": "Välj minst ett lag."
     }
+  },
+  "entity": {
+    "sensor": {
+      "next_game": {
+        "name": "Nästa match",
+        "state_attributes": {
+          "status": {
+            "name": "Status",
+            "state": {
+              "upcoming": "Kommande",
+              "in_progress": "Pågår"
+            }
+          },
+          "opponent": {
+            "name": "Motståndare"
+          },
+          "opponent_logo": {
+            "name": "Motståndarens logga"
+          },
+          "home_game": {
+            "name": "Hemmamatch"
+          },
+          "venue": {
+            "name": "Arena"
+          },
+          "home_team": {
+            "name": "Hemmalag"
+          },
+          "away_team": {
+            "name": "Bortalag"
+          },
+          "home_logo": {
+            "name": "Hemmalagets logga"
+          },
+          "away_logo": {
+            "name": "Bortalagets logga"
+          }
+        }
+      },
+      "last_game": {
+        "name": "Senaste match",
+        "state": {
+          "win": "Vinst",
+          "loss": "Förlust",
+          "overtime_win": "Vinst efter förlängning",
+          "overtime_loss": "Förlust efter förlängning",
+          "shootout_win": "Vinst efter straffar",
+          "shootout_loss": "Förlust efter straffar"
+        },
+        "state_attributes": {
+          "start": {
+            "name": "Start"
+          },
+          "opponent": {
+            "name": "Motståndare"
+          },
+          "opponent_logo": {
+            "name": "Motståndarens logga"
+          },
+          "home_game": {
+            "name": "Hemmamatch"
+          },
+          "venue": {
+            "name": "Arena"
+          },
+          "home_team": {
+            "name": "Hemmalag"
+          },
+          "away_team": {
+            "name": "Bortalag"
+          },
+          "home_logo": {
+            "name": "Hemmalagets logga"
+          },
+          "away_logo": {
+            "name": "Bortalagets logga"
+          },
+          "home_score": {
+            "name": "Hemmalagets mål"
+          },
+          "away_score": {
+            "name": "Bortalagets mål"
+          }
+        }
+      },
+      "position": {
+        "name": "Tabellplacering",
+        "state_attributes": {
+          "points": {
+            "name": "Poäng"
+          },
+          "games_played": {
+            "name": "Spelade matcher"
+          },
+          "wins": {
+            "name": "Vinster"
+          },
+          "overtime_wins": {
+            "name": "Vinster efter förlängning"
+          },
+          "overtime_losses": {
+            "name": "Förluster efter förlängning"
+          },
+          "losses": {
+            "name": "Förluster"
+          },
+          "goals_for": {
+            "name": "Gjorda mål"
+          },
+          "goals_against": {
+            "name": "Insläppta mål"
+          },
+          "goal_difference": {
+            "name": "Målskillnad"
+          }
+        }
+      },
+      "standings": {
+        "name": "Tabell",
+        "state_attributes": {
+          "table": {
+            "name": "Tabell"
+          }
+        }
+      }
+    }
   }
 }
