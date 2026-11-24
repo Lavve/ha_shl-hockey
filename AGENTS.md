@@ -50,7 +50,9 @@ custom_components/shl/
   coordinator.py  DataUpdateCoordinator – uses api.py and schedule.py.
   __init__.py     Setup / unload of the config entry.
   config_flow.py  Config flow + options flow.
-  sensor.py       Entities.
+  entity.py       Device info shared by the entities.
+  calendar.py     A calendar per favorite team.
+  sensor.py       Sensors.
   diagnostics.py  Download diagnostics (last data, next update, table state).
   manifest.json
   icons.json      Entity icons (by translation_key).

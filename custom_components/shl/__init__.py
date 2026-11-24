@@ -11,7 +11,7 @@ from .api import ShlApiClient
 from .const import DOMAIN, LEAGUE_DEVICE_ID
 from .coordinator import ShlConfigEntry, ShlCoordinator
 
-PLATFORMS: list[Platform] = [Platform.SENSOR]
+PLATFORMS: list[Platform] = [Platform.CALENDAR, Platform.SENSOR]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ShlConfigEntry) -> bool:

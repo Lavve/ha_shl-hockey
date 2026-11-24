@@ -27,14 +27,13 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
 )
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.typing import StateType
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import dt as dt_util
 
-from .const import DOMAIN, LEAGUE_DEVICE_ID, SHL_URL
 from .coordinator import ShlConfigEntry, ShlCoordinator, ShlData
+from .entity import league_device_info, team_device_info
 from .models import Game, GameTeam, Standing
 from .schedule import is_in_progress
 
@@ -258,13 +257,7 @@ class ShlTeamSensor(CoordinatorEntity[ShlCoordinator], SensorEntity):
         self.entity_description = description
         self._team_code = team_code
         self._attr_unique_id = f"{team_code}_{description.key}".lower()
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, team_code)},
-            name=_team_name(coordinator.data, team_code),
-            manufacturer="SHL",
-            entry_type=DeviceEntryType.SERVICE,
-            configuration_url=SHL_URL,
-        )
+        self._attr_device_info = team_device_info(coordinator.data, team_code)
 
     @property
     def _view(self) -> TeamView:
@@ -298,13 +291,7 @@ class ShlStandingsSensor(CoordinatorEntity[ShlCoordinator], SensorEntity):
         """Initialize the sensor."""
         super().__init__(coordinator)
         self._attr_unique_id = "standings"
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, LEAGUE_DEVICE_ID)},
-            name="SHL",
-            manufacturer="SHL",
-            entry_type=DeviceEntryType.SERVICE,
-            configuration_url=SHL_URL,
-        )
+        self._attr_device_info = league_device_info()
 
     @property
     def native_value(self) -> str:
@@ -336,10 +323,3 @@ class ShlStandingsSensor(CoordinatorEntity[ShlCoordinator], SensorEntity):
             ]
         }
 
-
-def _team_name(data: ShlData | None, code: str) -> str:
-    if data:
-        for s in data.standings:
-            if s.team_code == code:
-                return s.name
-    return code

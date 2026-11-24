@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import Final
 
 DOMAIN: Final = "shl"
-VERSION: Final = "2026.11.0b3"  # keep in sync with manifest.json
+VERSION: Final = "2026.11.0b4"  # keep in sync with manifest.json
 SHL_URL: Final = "https://www.shl.se"
 LEAGUE_DEVICE_ID: Final = "league"
 

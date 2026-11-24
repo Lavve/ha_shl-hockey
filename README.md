@@ -50,11 +50,12 @@ Or go to **Settings → Devices & services → Add integration** and search for
 
 ## Entities
 
-Each favorite team gets its own device with four sensors. Entity IDs below use
+Each favorite team gets its own device with a calendar and four sensors. Entity IDs below use
 Frölunda HC as an example.
 
 | Entity | State | Description |
 |---|---|---|
+| `calendar.frolunda_hc_games` | – | Every game this season, with the score once played. |
 | `sensor.frolunda_hc_next_game` | Start time | The next or ongoing game. |
 | `sensor.frolunda_hc_last_game` | Result | `win`, `loss`, `overtime_win`, `overtime_loss`, `shootout_win` or `shootout_loss`. |
 | `sensor.frolunda_hc_position` | Number | Position in the standings. |
@@ -108,6 +109,7 @@ Ready-to-copy dashboard cards and automations are in the
 | [Team stats](examples/cards/team_stats.yaml) | Position, points, record, home/away and form |
 | [Standings](examples/cards/standings.yaml) | The full standings table |
 | [Game notification](examples/automations/game_notification.yaml) | A notification five minutes before puck drop |
+| [Game notification (calendar)](examples/automations/game_notification_calendar.yaml) | The same, with the calendar trigger |
 
 The simplest start is a built-in tile card, which Home Assistant formats in
 your language:
