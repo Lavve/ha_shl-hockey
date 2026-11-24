@@ -52,8 +52,11 @@ custom_components/shl/
   sensor.py       Entities.
   manifest.json
   icons.json      Entity icons (by translation_key).
+  brand/          icon.png, icon@2x.png (own artwork, no SHL logo).
   translations/   en.json (source), sv.json, ...
 scripts/          Manual test scripts that run without Home Assistant.
+.github/workflows/validate.yaml   HACS action + hassfest.
+hacs.json         Marketplace metadata (must be in every release).
 ```
 
 `const.py`, `models.py`, `api.py` and `schedule.py` must stay free of
@@ -94,6 +97,15 @@ Home Assistant imports so they can be tested with the scripts in `scripts/`.
   `feat: add adaptive polling schedule`.
   Types: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `ci`.
 - New user-facing strings go into `translations/en.json` first, then `sv.json`.
+  Do not use `strings.json`.
+
+## Releases
+
+- Publish a **GitHub release** (a tag alone is not enough).
+- The tag must equal `version` in `manifest.json` (and `VERSION` in
+  `const.py`, used in the User-Agent).
+- `hacs.json` must be in every release. Raise `homeassistant` in it when a
+  release needs a newer Home Assistant.
 
 ## Testing
 
