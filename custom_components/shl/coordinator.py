@@ -1,4 +1,4 @@
-"""DataUpdateCoordinator for the SHL Hockey integration."""
+"""DataUpdateCoordinator for the SHL integration."""
 
 from __future__ import annotations
 

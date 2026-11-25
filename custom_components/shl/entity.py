@@ -1,4 +1,4 @@
-"""Shared device info for the SHL Hockey entities."""
+"""Shared device info for the SHL entities."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Sensors for SHL Hockey.
+"""Sensors for SHL.
 
 Per favorite team (one device per team):
 - next_game  (timestamp)  next or ongoing game

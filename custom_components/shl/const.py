@@ -1,4 +1,4 @@
-"""Constants for the SHL Hockey integration.
+"""Constants for the SHL integration.
 
 This module must not import Home Assistant, so the API client can be
 tested on its own (see scripts/test_api.py).
@@ -24,7 +24,7 @@ STANDINGS_PROVIDER: Final = "statnet"
 STANDINGS_COUNT: Final = 25
 
 # Identify ourselves honestly so SHL can see what is calling them.
-USER_AGENT: Final = f"HomeAssistant-SHLHockey/{VERSION}"
+USER_AGENT: Final = f"HomeAssistant-SHL/{VERSION}"
 REQUEST_TIMEOUT: Final = 20  # seconds
 
 # --- Game types (stable codes in the filter response) ---------------------

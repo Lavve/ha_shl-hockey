@@ -23,7 +23,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "SHL Hockey options",
+        "title": "SHL options",
         "data": {
           "teams": "Favorite teams"
         },

@@ -1,4 +1,4 @@
-"""Diagnostics for the SHL Hockey integration.
+"""Diagnostics for the SHL integration.
 
 shl.se is public and unauthenticated, so there is nothing to redact. What
 helps when something misbehaves is what was last read, and when the

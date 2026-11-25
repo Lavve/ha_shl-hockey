@@ -1,4 +1,4 @@
-"""The SHL Hockey (unofficial) integration."""
+"""The SHL (unofficial) integration."""
 
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ PLATFORMS: list[Platform] = [
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ShlConfigEntry) -> bool:
-    """Set up SHL Hockey from a config entry."""
+    """Set up SHL from a config entry."""
     session = async_get_clientsession(hass)
     coordinator = ShlCoordinator(hass, entry, ShlApiClient(session), session)
     await coordinator.async_config_entry_first_refresh()

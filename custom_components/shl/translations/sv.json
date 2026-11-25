@@ -23,7 +23,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "Inställningar för SHL Hockey",
+        "title": "Inställningar för SHL",
         "data": {
           "teams": "Favoritlag"
         },

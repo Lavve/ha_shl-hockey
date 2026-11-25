@@ -1,4 +1,4 @@
-"""Config flow and options flow for SHL Hockey."""
+"""Config flow and options flow for SHL."""
 
 from __future__ import annotations
 
@@ -47,7 +47,7 @@ class ShlConfigFlow(ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             if user_input.get(CONF_TEAMS):
                 return self.async_create_entry(
-                    title="SHL Hockey",
+                    title="SHL",
                     data={},
                     options={CONF_TEAMS: user_input[CONF_TEAMS]},
                 )
