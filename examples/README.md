@@ -33,6 +33,7 @@ device page under **Settings → Devices & services → SHL Hockey**.
 |---|---|
 | [game_notification.yaml](automations/game_notification.yaml) | A notification five minutes before puck drop |
 | [game_notification_calendar.yaml](automations/game_notification_calendar.yaml) | The same, with the calendar trigger – no templates needed |
+| [goal_light.yaml](automations/goal_light.yaml) | Flashes a light when your team scores. Requires live updates. |
 
 ## Language and formats
 

@@ -25,10 +25,12 @@
       "init": {
         "title": "SHL Hockey options",
         "data": {
-          "teams": "Favorite teams"
+          "teams": "Favorite teams",
+          "live_updates": "Live updates"
         },
         "data_description": {
-          "teams": "Data is fetched more often when these teams play."
+          "teams": "Data is fetched more often when these teams play.",
+          "live_updates": "Live score and goal events while your teams play, from the stream shl.se's own game center uses. Off by default."
         }
       }
     },
@@ -40,6 +42,49 @@
     "calendar": {
       "games": {
         "name": "Games"
+      }
+    },
+    "event": {
+      "goal": {
+        "name": "Goal",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "goal_for": "Goal for",
+              "goal_against": "Goal against"
+            }
+          },
+          "team": {
+            "name": "Scoring team"
+          },
+          "home_team": {
+            "name": "Home team"
+          },
+          "away_team": {
+            "name": "Away team"
+          },
+          "home_score": {
+            "name": "Home score"
+          },
+          "away_score": {
+            "name": "Away score"
+          },
+          "scorer": {
+            "name": "Scorer"
+          },
+          "assists": {
+            "name": "Assists"
+          },
+          "period": {
+            "name": "Period"
+          },
+          "clock": {
+            "name": "Game clock"
+          },
+          "strength": {
+            "name": "Strength"
+          }
+        }
       }
     },
     "sensor": {
@@ -76,6 +121,28 @@
           },
           "away_logo": {
             "name": "Away team logo"
+          },
+          "home_score": {
+            "name": "Home score"
+          },
+          "away_score": {
+            "name": "Away score"
+          },
+          "period": {
+            "name": "Period"
+          },
+          "clock": {
+            "name": "Game clock"
+          },
+          "live_state": {
+            "name": "Game phase",
+            "state": {
+              "ongoing": "Ongoing",
+              "period_break": "Intermission",
+              "overtime": "Overtime",
+              "shootout": "Shootout",
+              "ended": "Ended"
+            }
           }
         }
       },

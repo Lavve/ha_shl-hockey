@@ -33,6 +33,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import dt as dt_util
 
 from .coordinator import ShlConfigEntry, ShlCoordinator, ShlData
+from .live import LiveStatus
 from .entity import league_device_info, team_device_info
 from .models import Game, GameTeam, Standing
 from .schedule import is_in_progress
@@ -56,17 +57,21 @@ class TeamView:
     code: str
     games: list[Game]
     next_game: Game | None
+    live: LiveStatus | None
     last_game: Game | None
     standing: Standing | None
 
     @classmethod
-    def build(cls, data: ShlData, code: str) -> TeamView:
+    def build(cls, coordinator: ShlCoordinator, code: str) -> TeamView:
         """Build the view for a team."""
+        data: ShlData = coordinator.data
         games = [g for g in data.games if g.involves(code)]
+        next_game = next((g for g in games if not g.is_played), None)
         return cls(
             code=code,
             games=games,
-            next_game=next((g for g in games if not g.is_played), None),
+            next_game=next_game,
+            live=coordinator.live_status(next_game.uuid) if next_game else None,
             last_game=next((g for g in reversed(games) if g.is_played), None),
             standing=next((s for s in data.standings if s.team_code == code), None),
         )
@@ -85,7 +90,20 @@ def _next_game_attrs(view: TeamView) -> dict[str, Any] | None:
     if (game := view.next_game) is None:
         return None
     status = "in_progress" if is_in_progress(game, dt_util.utcnow()) else "upcoming"
-    return {"status": status, **_game_attrs(game, view.code)}
+    attrs: dict[str, Any] = {"status": status, **_game_attrs(game, view.code)}
+    if (live := view.live) is not None:
+        # Only with live updates on, while the game is followed.
+        attrs.update(
+            {
+                "status": "in_progress",
+                "home_score": live.home_score,
+                "away_score": live.away_score,
+                "live_state": live.state,
+                "period": live.period,
+                "clock": live.clock,
+            }
+        )
+    return attrs
 
 
 def _last_game_attrs(view: TeamView) -> dict[str, Any] | None:
@@ -261,7 +279,7 @@ class ShlTeamSensor(CoordinatorEntity[ShlCoordinator], SensorEntity):
 
     @property
     def _view(self) -> TeamView:
-        return TeamView.build(self.coordinator.data, self._team_code)
+        return TeamView.build(self.coordinator, self._team_code)
 
     @property
     def native_value(self) -> StateType | datetime:

@@ -21,6 +21,11 @@
       "games": {
         "default": "mdi:hockey-sticks"
       }
+    },
+    "event": {
+      "goal": {
+        "default": "mdi:alarm-light-outline"
+      }
     }
   }
 }

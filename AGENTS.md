@@ -19,7 +19,9 @@ treat it with care.
    needed now.
 2. **Be gentle with shl.se.**
    - Never poll more often than every 5 minutes (`MIN_INTERVAL`).
-   - No live updates. Adaptive polling only (see `schedule.py`).
+   - Adaptive polling (see `schedule.py`). Live updates come from SHL's
+     push stream (`live.py`), are off by default, and the stream is only
+     open while a favorite team plays. Never poll faster for live.
    - Polling intervals are not user-configurable (Home Assistant guideline).
      Users who want manual control can disable polling and call
      `homeassistant.update_entity`.
@@ -35,8 +37,8 @@ treat it with care.
    - Numbers are real `int`/`float`.
    - All entity names and enum states use `translation_key`.
    - Team names come from SHL and are not translated.
-4. **Out of scope:** TV channels (separate integration), live play-by-play,
-   team logos bundled in the repo.
+4. **Out of scope:** TV channels (separate integration), full play-by-play
+   (penalties, shots, line-ups), team logos bundled in the repo.
 
 ## Structure
 
@@ -47,12 +49,14 @@ custom_components/shl/
   api.py          shl.se client + parsing. No Home Assistant imports.
   schedule.py     Polling rules (pure functions). No Home Assistant imports.
   table.py        Standings calculated from results. No Home Assistant imports.
-  coordinator.py  DataUpdateCoordinator – uses api.py and schedule.py.
+  live.py         Live stream reader + score/goal tracking. No Home Assistant imports.
+  coordinator.py  DataUpdateCoordinator – uses api.py, schedule.py and live.py.
   __init__.py     Setup / unload of the config entry.
   config_flow.py  Config flow + options flow.
   entity.py       Device info shared by the entities.
   calendar.py     A calendar per favorite team.
   sensor.py       Sensors.
+  event.py        Goal event per favorite team (only with live updates on).
   diagnostics.py  Download diagnostics (last data, next update, table state).
   manifest.json
   icons.json      Entity icons (by translation_key).
@@ -122,4 +126,7 @@ Home Assistant imports so they can be tested with the scripts in `scripts/`.
 pip install aiohttp
 python scripts/test_api.py          # live request to shl.se
 python scripts/test_api.py FHC      # one team
+python scripts/test_schedule.py     # polling rules, no network
+python scripts/test_live.py         # live tracking, no network
+python scripts/test_stream.py       # print the raw live stream
 ```

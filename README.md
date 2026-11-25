@@ -24,8 +24,8 @@ Swedish Hockey League (SHL) for your favorite teams.
 - Adaptive polling: data is fetched often only when your teams play.
 - Follows your Home Assistant language and date/number format.
 - Handles season changes and playoffs automatically.
-
-There are no live updates (goals, periods) – see [How data is fetched](#how-data-is-fetched).
+- Optional live updates: score, period and a goal event while your teams play
+  (off by default).
 
 ## Installation
 
@@ -46,7 +46,7 @@ Home Assistant configuration folder and restart Home Assistant.
 
 Or go to **Settings → Devices & services → Add integration** and search for
 **SHL Hockey**. Select your favorite teams. You can change them later with
-**Configure**.
+**Configure**, where you can also turn on **Live updates**.
 
 ## Entities
 
@@ -61,6 +61,12 @@ Frölunda HC as an example.
 | `sensor.frolunda_hc_position` | Number | Position in the standings. |
 | `sensor.frolunda_hc_games_played` | Number | Games played this season. All of the season's games in the `games` attribute. Disabled by default – enable it on the team's device page. |
 
+With live updates on, each team also gets a goal event:
+
+| Entity | Event types | Description |
+|---|---|---|
+| `event.frolunda_hc_goal` | `goal_for`, `goal_against` | Fires when the team, or its opponent, scores. |
+
 The **SHL** device has one sensor:
 
 | Entity | State | Description |
@@ -71,7 +77,13 @@ The **SHL** device has one sensor:
 
 **Next game:** `status` (`upcoming`, `in_progress`), `opponent`,
 `opponent_logo`, `home_game`, `venue`, `home_team`, `away_team`, `home_logo`,
-`away_logo`
+`away_logo`. With live updates on, while the game is played: `home_score`,
+`away_score`, `live_state` (`ongoing`, `period_break`, `overtime`, `shootout`,
+`ended`), `period` and `clock` (time played in the period, e.g. `07:12`).
+
+**Goal event:** `team` (the scoring team), `home_team`, `away_team`,
+`home_score`, `away_score` (after the goal), `scorer`, `assists` (a list),
+`period`, `clock` and `strength` (as SHL reports it, e.g. `EQ`, `PP1`, `SH1`).
 
 **Last game:** `start`, the same game attributes as above, `home_score`,
 `away_score`
@@ -110,6 +122,7 @@ Ready-to-copy dashboard cards and automations are in the
 | [Standings](examples/cards/standings.yaml) | The full standings table |
 | [Game notification](examples/automations/game_notification.yaml) | A notification five minutes before puck drop |
 | [Game notification (calendar)](examples/automations/game_notification_calendar.yaml) | The same, with the calendar trigger |
+| [Goal light](examples/automations/goal_light.yaml) | Flashes a light when your team scores (live updates) |
 
 The simplest start is a built-in tile card, which Home Assistant formats in
 your language:
@@ -140,6 +153,16 @@ over, so playoffs and new seasons are picked up automatically.
 The intervals cannot be changed. If you want full control, turn off polling in
 the integration's **System options** and call `homeassistant.update_entity`
 from an automation.
+
+### Live updates
+
+Off by default. When turned on, the integration opens the same live stream
+that shl.se's own game center uses, but only while one of your teams is
+playing, and closes it after the game. The stream pushes score, period and
+goals as they happen – nothing is polled more often. Polling above continues
+as a backup, and the final result is fetched as soon as the stream reports the
+game as ended. See the [goal light](examples/automations/goal_light.yaml)
+example.
 
 ## Contributing
 

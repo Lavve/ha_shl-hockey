@@ -25,10 +25,12 @@
       "init": {
         "title": "Inställningar för SHL Hockey",
         "data": {
-          "teams": "Favoritlag"
+          "teams": "Favoritlag",
+          "live_updates": "Liveuppdateringar"
         },
         "data_description": {
-          "teams": "Data hämtas oftare när de här lagen spelar."
+          "teams": "Data hämtas oftare när de här lagen spelar.",
+          "live_updates": "Ställning och målhändelser medan dina lag spelar, från samma ström som shl.se:s egen game center använder. Avstängt som standard."
         }
       }
     },
@@ -40,6 +42,49 @@
     "calendar": {
       "games": {
         "name": "Matcher"
+      }
+    },
+    "event": {
+      "goal": {
+        "name": "Mål",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "goal_for": "Mål för",
+              "goal_against": "Mål emot"
+            }
+          },
+          "team": {
+            "name": "Målgörande lag"
+          },
+          "home_team": {
+            "name": "Hemmalag"
+          },
+          "away_team": {
+            "name": "Bortalag"
+          },
+          "home_score": {
+            "name": "Hemmalagets mål"
+          },
+          "away_score": {
+            "name": "Bortalagets mål"
+          },
+          "scorer": {
+            "name": "Målskytt"
+          },
+          "assists": {
+            "name": "Assist"
+          },
+          "period": {
+            "name": "Period"
+          },
+          "clock": {
+            "name": "Matchtid"
+          },
+          "strength": {
+            "name": "Spelläge"
+          }
+        }
       }
     },
     "sensor": {
@@ -76,6 +121,28 @@
           },
           "away_logo": {
             "name": "Bortalagets logga"
+          },
+          "home_score": {
+            "name": "Hemmalagets mål"
+          },
+          "away_score": {
+            "name": "Bortalagets mål"
+          },
+          "period": {
+            "name": "Period"
+          },
+          "clock": {
+            "name": "Matchtid"
+          },
+          "live_state": {
+            "name": "Matchläge",
+            "state": {
+              "ongoing": "Pågår",
+              "period_break": "Periodpaus",
+              "overtime": "Förlängning",
+              "shootout": "Straffläggning",
+              "ended": "Avslutad"
+            }
           }
         }
       },
