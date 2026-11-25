@@ -1,6 +1,6 @@
 """A goal event per favorite team, from the live stream.
 
-Only set up when live updates are on. Fires "goal_for" when the team
+Fires only while the team's live switch is on: "goal_for" when the team
 scores and "goal_against" when the opponent does - the trigger for a goal
 light, a horn or a notification.
 """
@@ -65,7 +65,11 @@ class ShlGoalEvent(EventEntity):
         game = next(
             (g for g in self._coordinator.data.games if g.uuid == goal.game_uuid), None
         )
-        if game is None or not game.involves(self._team_code):
+        if (
+            game is None
+            or not game.involves(self._team_code)
+            or self._team_code not in self._coordinator.live_teams
+        ):
             return
         ours = goal.team_code == self._team_code
         scoring = game.home if goal.team_code == game.home.code else game.away

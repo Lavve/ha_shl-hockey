@@ -15,7 +15,6 @@ from homeassistant.config_entries import (
 from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.selector import (
-    BooleanSelector,
     SelectOptionDict,
     SelectSelector,
     SelectSelectorConfig,
@@ -23,7 +22,7 @@ from homeassistant.helpers.selector import (
 )
 
 from .api import ShlApiClient, ShlApiError
-from .const import CONF_LIVE, CONF_TEAMS, DOMAIN
+from .const import CONF_TEAMS, DOMAIN
 from .coordinator import ShlConfigEntry
 from .models import Standing
 
@@ -83,14 +82,14 @@ class ShlConfigFlow(ConfigFlow, domain=DOMAIN):
 
 
 class ShlOptionsFlow(OptionsFlowWithReload):
-    """Change favorite teams and live updates. Reloads the entry on save."""
+    """Change favorite teams. Reloads the entry on save."""
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Show the options form."""
         errors: dict[str, str] = {}
-        options = {CONF_LIVE: False, **self.config_entry.options}
+        options = {**self.config_entry.options}
 
         if user_input is not None:
             if user_input.get(CONF_TEAMS):
@@ -106,12 +105,7 @@ class ShlOptionsFlow(OptionsFlowWithReload):
             for code in options.get(CONF_TEAMS, [])
         ]
 
-        schema = vol.Schema(
-            {
-                vol.Required(CONF_TEAMS): _team_selector(teams),
-                vol.Required(CONF_LIVE): BooleanSelector(),
-            }
-        )
+        schema = vol.Schema({vol.Required(CONF_TEAMS): _team_selector(teams)})
         return self.async_show_form(
             step_id="init",
             data_schema=self.add_suggested_values_to_schema(schema, options),

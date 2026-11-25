@@ -17,7 +17,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from homeassistant.util import dt as dt_util
 
 from .api import ShlApiClient, ShlApiError
-from .const import CONF_LIVE, CONF_TEAMS, DOMAIN, GAME_TYPE_REGULAR, POST_SEASON_GAME_TYPES
+from .const import CONF_TEAMS, DOMAIN, GAME_TYPE_REGULAR, POST_SEASON_GAME_TYPES
 from .live import FOLLOW_AFTER, FOLLOW_BEFORE, LiveFeed, LiveStatus, LiveTracker
 from .models import Game, SeasonFilter, Standing
 from .schedule import (
@@ -90,15 +90,16 @@ class ShlCoordinator(DataUpdateCoordinator[ShlData]):
         self._table_behind_played: int | None = None
         self._standings_source = "official"
         self.tracker = LiveTracker()
-        self.feed: LiveFeed | None = None
-        if entry.options.get(CONF_LIVE, False):
-            self.feed = LiveFeed(
-                session,
-                self._handle_live_message,
-                lambda coro: entry.async_create_background_task(
-                    hass, coro, f"{DOMAIN} live stream"
-                ),
-            )
+        # Teams with their live switch on. Filled in by the switches as they
+        # restore their state, so the stream stays closed until one is on.
+        self.live_teams: set[str] = set()
+        self.feed = LiveFeed(
+            session,
+            self._handle_live_message,
+            lambda coro: entry.async_create_background_task(
+                hass, coro, f"{DOMAIN} live stream"
+            ),
+        )
 
     @staticmethod
     async def async_remove_store(hass: HomeAssistant) -> None:
@@ -308,15 +309,26 @@ class ShlCoordinator(DataUpdateCoordinator[ShlData]):
         # Forget the played count, so the next update reads the table again.
         self._standings_played_count = None
 
-    def live_status(self, game_uuid: str) -> LiveStatus | None:
-        """Return the live status of a followed game, if any."""
-        return self.tracker.statuses.get(game_uuid) if self.feed else None
+    def live_status(self, game: Game, team_code: str) -> LiveStatus | None:
+        """Return the live status of a game, if the team has live on."""
+        if team_code not in self.live_teams:
+            return None
+        return self.tracker.statuses.get(game.uuid)
+
+    @callback
+    def async_set_live(self, team_code: str, on: bool) -> None:
+        """Turn live updates on or off for a team, without reloading."""
+        if on:
+            self.live_teams.add(team_code)
+        else:
+            self.live_teams.discard(team_code)
+        if self.data is not None:
+            self._follow_live_games(dt_util.utcnow(), self.data.games)
+            self.async_update_listeners()
 
     def _follow_live_games(self, now: datetime, games: list[Game]) -> None:
-        """Keep the live stream open while a favorite team is playing."""
-        if self.feed is None:
-            return
-        teams = set(self.favorites)
+        """Keep the live stream open while a team with live on is playing."""
+        teams = self.live_teams & set(self.favorites)
         playing = [
             g
             for g in games
@@ -357,9 +369,9 @@ class ShlCoordinator(DataUpdateCoordinator[ShlData]):
             "table_behind": self._table_behind,
             "standings_source": self._standings_source,
             "live": {
-                "enabled": self.feed is not None,
-                "connected": self.feed.connected if self.feed else False,
-                "following": sorted(self.feed.following) if self.feed else [],
+                "teams": sorted(self.live_teams),
+                "connected": self.feed.connected,
+                "following": sorted(self.feed.following),
                 "statuses": {
                     uuid: {
                         "home_score": s.home_score,
@@ -371,7 +383,7 @@ class ShlCoordinator(DataUpdateCoordinator[ShlData]):
                     }
                     for uuid, s in self.tracker.statuses.items()
                 },
-                "recent_messages": list(self.feed.recent) if self.feed else [],
+                "recent_messages": list(self.feed.recent),
             },
             "table_behind_since": iso(self._table_behind_since),
         }

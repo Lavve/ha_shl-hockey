@@ -1,7 +1,7 @@
 # Flash a light when your team scores.
-# The goal event only exists with live updates on (Configure → Live updates).
+# Goals are only reported while the team's live updates switch is on.
 #
-# Requires: live updates.
+# Requires: switch.frolunda_hc_live_updates turned on.
 # Team: replace "frolunda_hc" with your team's entity prefix.
 # Light: replace "light.living_room" with your own light.
 

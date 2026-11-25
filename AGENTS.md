@@ -20,8 +20,8 @@ treat it with care.
 2. **Be gentle with shl.se.**
    - Never poll more often than every 5 minutes (`MIN_INTERVAL`).
    - Adaptive polling (see `schedule.py`). Live updates come from SHL's
-     push stream (`live.py`), are off by default, and the stream is only
-     open while a favorite team plays. Never poll faster for live.
+     push stream (`live.py`), are off by default (a switch per team), and
+     the stream is only open while a team with live on plays. Never poll faster for live.
    - Polling intervals are not user-configurable (Home Assistant guideline).
      Users who want manual control can disable polling and call
      `homeassistant.update_entity`.
@@ -56,7 +56,8 @@ custom_components/shl/
   entity.py       Device info shared by the entities.
   calendar.py     A calendar per favorite team.
   sensor.py       Sensors.
-  event.py        Goal event per favorite team (only with live updates on).
+  event.py        Goal event per favorite team (fires only with live on).
+  switch.py       Live updates switch per favorite team (restores its state).
   diagnostics.py  Download diagnostics (last data, next update, table state).
   manifest.json
   icons.json      Entity icons (by translation_key).

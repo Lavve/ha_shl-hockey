@@ -46,11 +46,12 @@ Home Assistant configuration folder and restart Home Assistant.
 
 Or go to **Settings → Devices & services → Add integration** and search for
 **SHL Hockey**. Select your favorite teams. You can change them later with
-**Configure**, where you can also turn on **Live updates**.
+**Configure**.
 
 ## Entities
 
-Each favorite team gets its own device with a calendar and four sensors. Entity IDs below use
+Each favorite team gets its own device with a calendar, four sensors, a goal
+event and a live updates switch. Entity IDs below use
 Frölunda HC as an example.
 
 | Entity | State | Description |
@@ -60,12 +61,8 @@ Frölunda HC as an example.
 | `sensor.frolunda_hc_last_game` | Result | `win`, `loss`, `overtime_win`, `overtime_loss`, `shootout_win` or `shootout_loss`. |
 | `sensor.frolunda_hc_position` | Number | Position in the standings. |
 | `sensor.frolunda_hc_games_played` | Number | Games played this season. All of the season's games in the `games` attribute. Disabled by default – enable it on the team's device page. |
-
-With live updates on, each team also gets a goal event:
-
-| Entity | Event types | Description |
-|---|---|---|
-| `event.frolunda_hc_goal` | `goal_for`, `goal_against` | Fires when the team, or its opponent, scores. |
+| `event.frolunda_hc_goal` | Last goal time | Fires `goal_for` when the team scores and `goal_against` when the opponent does. Only with live updates on. |
+| `switch.frolunda_hc_live_updates` | `on`/`off` | Live updates for the team's games. Off by default. Found under **Configuration** on the device page. |
 
 The **SHL** device has one sensor:
 
@@ -156,8 +153,10 @@ from an automation.
 
 ### Live updates
 
-Off by default. When turned on, the integration opens the same live stream
-that shl.se's own game center uses, but only while one of your teams is
+Off by default, and turned on per team with its **Live updates** switch.
+You can turn it off for a single game – the stream is usually ahead of the TV
+broadcast – by hand or from an automation. When on, the integration opens the same live stream
+that shl.se's own game center uses, but only while a team with live on is
 playing, and closes it after the game. The stream pushes score, period and
 goals as they happen – nothing is polled more often. Polling above continues
 as a backup, and the final result is fetched as soon as the stream reports the

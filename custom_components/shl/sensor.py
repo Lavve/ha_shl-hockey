@@ -71,7 +71,7 @@ class TeamView:
             code=code,
             games=games,
             next_game=next_game,
-            live=coordinator.live_status(next_game.uuid) if next_game else None,
+            live=coordinator.live_status(next_game, code) if next_game else None,
             last_game=next((g for g in reversed(games) if g.is_played), None),
             standing=next((s for s in data.standings if s.team_code == code), None),
         )
@@ -92,7 +92,7 @@ def _next_game_attrs(view: TeamView) -> dict[str, Any] | None:
     status = "in_progress" if is_in_progress(game, dt_util.utcnow()) else "upcoming"
     attrs: dict[str, Any] = {"status": status, **_game_attrs(game, view.code)}
     if (live := view.live) is not None:
-        # Only with live updates on, while the game is followed.
+        # Only with the team's live switch on, while the game is followed.
         attrs.update(
             {
                 "status": "in_progress",

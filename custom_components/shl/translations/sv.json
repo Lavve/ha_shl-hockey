@@ -25,12 +25,10 @@
       "init": {
         "title": "Inställningar för SHL Hockey",
         "data": {
-          "teams": "Favoritlag",
-          "live_updates": "Liveuppdateringar"
+          "teams": "Favoritlag"
         },
         "data_description": {
-          "teams": "Data hämtas oftare när de här lagen spelar.",
-          "live_updates": "Ställning och målhändelser medan dina lag spelar, från samma ström som shl.se:s egen game center använder. Avstängt som standard."
+          "teams": "Data hämtas oftare när de här lagen spelar."
         }
       }
     },
@@ -246,6 +244,11 @@
             "name": "Tabell"
           }
         }
+      }
+    },
+    "switch": {
+      "live_updates": {
+        "name": "Liveuppdateringar"
       }
     }
   }

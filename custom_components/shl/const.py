@@ -38,7 +38,6 @@ POST_SEASON_GAME_TYPES: Final = (GAME_TYPE_PLAYOFF, GAME_TYPE_QUALDOWN)
 # --- Config entry options ---------------------------------------------------
 
 CONF_TEAMS: Final = "teams"
-CONF_LIVE: Final = "live_updates"  # off by default
 
 # --- Game states (as returned by game-schedule) ---------------------------
 # Only "pre-game" and "post-game" have been observed. Anything else is

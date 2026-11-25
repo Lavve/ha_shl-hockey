@@ -25,12 +25,10 @@
       "init": {
         "title": "SHL Hockey options",
         "data": {
-          "teams": "Favorite teams",
-          "live_updates": "Live updates"
+          "teams": "Favorite teams"
         },
         "data_description": {
-          "teams": "Data is fetched more often when these teams play.",
-          "live_updates": "Live score and goal events while your teams play, from the stream shl.se's own game center uses. Off by default."
+          "teams": "Data is fetched more often when these teams play."
         }
       }
     },
@@ -246,6 +244,11 @@
             "name": "Table"
           }
         }
+      }
+    },
+    "switch": {
+      "live_updates": {
+        "name": "Live updates"
       }
     }
   }
