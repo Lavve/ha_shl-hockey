@@ -3,12 +3,13 @@
 Usage:
     python scripts/test_live.py
 
-The message shapes are what we expect from the stream; the first real game
-will tell if they hold.
+The message shapes follow what the stream sent during FHC-IFB in November
+2026: game updates about every 20 seconds, goal messages ahead of them.
 """
 
 from __future__ import annotations
 
+from datetime import UTC, datetime, timedelta
 import importlib
 from pathlib import Path
 import sys
@@ -37,13 +38,13 @@ def update(home: int, away: int, state: str = "Ongoing", period: int = 1,
 
 
 def goal(home: int, away: int, team: str, scorer: str = "Player",
-         game: str = GAME) -> tuple[str, dict]:
+         game: str = GAME, side: str | None = None) -> tuple[str, dict]:
     return live.KIND_GOAL, {
         "gameUuid": game,
         "type": "goal",
         "homeTeamValue": home,
         "awayTeamValue": away,
-        "teamDetails": {"teamCode": team},
+        "teamDetails": {"teamCode": team, **({"belongsTo": side} if side else {})},
         "scorer": scorer,
         "playerNumber": 17,
         "period": 2,
@@ -53,12 +54,16 @@ def goal(home: int, away: int, team: str, scorer: str = "Player",
     }
 
 
-def run(messages, tracker=None):
+START = datetime(2026, 11, 26, 18, 0, tzinfo=UTC)
+
+
+def run(messages, tracker=None, every: int = 20):
+    """Feed messages, one every `every` seconds, as the stream does."""
     tracker = tracker or live.LiveTracker()
     tracker.expect(GAME, "OHK", "FHC")
     goals, ended = [], False
-    for kind, body in messages:
-        changes = tracker.handle(kind, body)
+    for i, (kind, body) in enumerate(messages):
+        changes = tracker.handle(kind, body, START + timedelta(seconds=i * every))
         goals += changes.goals
         ended = ended or changes.ended
     return tracker, goals, ended
@@ -99,9 +104,38 @@ def main() -> None:
     checks.append(("Goal first updates the score",
                    (t.statuses[GAME].home_score, t.statuses[GAME].away_score), (0, 1)))
 
-    # Disallowed goal: score goes down, the next real goal is announced again.
-    t, goals, _ = run([update(0, 0), update(1, 0), update(0, 0), update(1, 0)])
+    # Disallowed goal: the lower score lasts, so the next 1-0 is a new goal.
+    t, goals, _ = run([update(0, 0), update(1, 0)] + [update(0, 0)] * 6 + [update(1, 0)])
     checks.append(("Disallowed goal, then a new one", len(goals), 2))
+
+    # As in FHC-IFB: the goal message, then a game update still at 0-0, then
+    # 1-0. One goal, and the score never drops back.
+    t, goals, _ = run([update(0, 0), goal(1, 0, "OHK", side="home"), update(0, 0), update(1, 0)])
+    checks += [
+        ("Late game update: goal only once", len(goals), 1),
+        ("Late game update: score kept", (t.statuses[GAME].home_score, t.statuses[GAME].away_score),
+         (1, 0)),
+    ]
+
+    # The stream's code is not ours (Örebro is "ÖRE"); belongsTo decides,
+    # even when the game update already counted the goal.
+    t, goals, _ = run([update(0, 0), update(1, 0), goal(1, 0, "ÖRE", side="home")])
+    checks.append(("belongsTo decides the team", goals[0].team_code, "OHK"))
+    t, goals, _ = run([update(0, 0), goal(1, 0, "ÖRE", side="home")])
+    checks.append(("belongsTo with a foreign code", goals[0].team_code, "OHK"))
+
+    # Before puck drop the stream says NotStarted; that is no live status.
+    t, goals, _ = run([update(0, 0, "NotStarted")])
+    checks.append(("NotStarted gives no status", t.statuses.get(GAME), None))
+
+    # Without our schedule's codes, the game update's teamId is used.
+    t2 = live.LiveTracker()
+    t2.handle(live.KIND_GAME, {"gameUuid": "x", "homeGoals": 0, "awayGoals": 0, "state": "Ongoing",
+                               "homeTeam": {"teamId": "FHC", "teamCode": ""},
+                               "awayTeam": {"teamId": "IFB", "teamCode": ""}})
+    t2.handle(live.KIND_GAME, {"gameUuid": "x", "homeGoals": 0, "awayGoals": 1, "state": "Ongoing"})
+    checks.append(("teamId when teamCode is empty", t2.handle(live.KIND_GAME, {
+        "gameUuid": "x", "homeGoals": 1, "awayGoals": 1, "state": "Ongoing"}).goals[0].team_code, "FHC"))
 
     # Two goals in one update.
     t, goals, _ = run([update(0, 0), update(2, 1)])

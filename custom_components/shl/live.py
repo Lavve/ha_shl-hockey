@@ -5,14 +5,21 @@ messages down as things happen, so following a game costs one request
 rather than frequent polling. It is only opened while a favorite team is
 playing, and closed again afterwards.
 
-What we know about it:
+What we know about it, from the first game we followed (FHC-IFB, Nov 2026):
 - Two message kinds matter. A game update carries the score, the phase of
   the game and the clock; a goal message carries the scorer and the score
-  the goal made. The game update is the source of truth for the score.
-- On connect the stream replays the day so far, so the same goal can be
-  seen again after a reconnect. Goals are only announced once per score.
-- Nothing at all is sent between events, so a quiet connection and a dead
-  one look the same. We reconnect after a long silence.
+  the goal made.
+- Every game of the day is re-sent about every 20 seconds, and each goal
+  message is repeated too, sometimes with an assist added later. Goals are
+  only announced once per score.
+- The goal message comes first; the game update can still show the old
+  score for another 20 seconds. That is a late update, not a disallowed
+  goal, so a lower score only counts once it has lasted (SCORE_LOWERED).
+- The game update's team codes are empty (the code is in "teamId"), and the
+  goal message's code is not always ours (Örebro is "ÖRE", not "OHK"), so
+  the goal message's "belongsTo" (home/away) decides who scored.
+- On connect the stream replays the day so far. We reconnect after a long
+  silence.
 
 No Home Assistant imports, so the message handling can be tested alone.
 """
@@ -47,6 +54,9 @@ KIND_GOAL = "gameScorer"
 SILENCE_LIMIT = 300
 RETRY_FIRST = 5
 RETRY_LONGEST = 120
+# A score below one already announced counts as a disallowed goal only
+# after this long; before that it is a game update that has not caught up.
+SCORE_LOWERED = timedelta(seconds=90)
 
 # The phases the stream reports, mapped to our own state keys.
 PHASES = {
@@ -115,21 +125,26 @@ class LiveTracker:
         self._away_codes: dict[str, str | None] = {}
         self._announced: dict[str, set[tuple[int, int]]] = {}
         self._details: dict[str, dict[tuple[int, int], GoalScored]] = {}
+        # When the stream first showed a score below the announced one.
+        self._lowered_since: dict[str, datetime] = {}
 
     def expect(self, game_uuid: str, home_code: str | None, away_code: str | None) -> None:
         """Tell the tracker which teams play, as our schedule writes them."""
         self._home_codes[game_uuid] = home_code
         self._away_codes[game_uuid] = away_code
 
-    def handle(self, kind: str, body: dict[str, Any]) -> Changes:
+    def handle(
+        self, kind: str, body: dict[str, Any], now: datetime | None = None
+    ) -> Changes:
         """Apply one message and return what changed."""
+        now = now or datetime.now(UTC)
         if kind == KIND_GAME:
-            return self._game_update(body)
+            return self._game_update(body, now)
         if kind == KIND_GOAL:
-            return self._goal_message(body)
+            return self._goal_message(body, now)
         return Changes()
 
-    def _game_update(self, body: dict[str, Any]) -> Changes:
+    def _game_update(self, body: dict[str, Any], now: datetime) -> Changes:
         uuid = str(body.get("gameUuid") or "")
         home_side = body.get("homeTeam") or {}
         away_side = body.get("awayTeam") or {}
@@ -137,12 +152,22 @@ class LiveTracker:
         away = _number(body.get("awayGoals", away_side.get("score")))
         if not uuid or home is None or away is None:
             return Changes()
+        if str(body.get("state") or "").lower() == "notstarted":
+            return Changes()
 
         # Our schedule's codes win; the stream's are only a fallback.
-        self._home_codes.setdefault(uuid, home_side.get("teamCode"))
-        self._away_codes.setdefault(uuid, away_side.get("teamCode"))
+        self._home_codes.setdefault(uuid, _team_code(home_side))
+        self._away_codes.setdefault(uuid, _team_code(away_side))
         timing = body.get("time") or {}
         before = self.statuses.get(uuid)
+        if before is not None and (home < before.home_score or away < before.away_score):
+            since = self._lowered_since.setdefault(uuid, now)
+            if now - since < SCORE_LOWERED:
+                # Most likely a game update behind the goal message: keep the
+                # higher score and take the rest of the update.
+                home, away = before.home_score, before.away_score
+        else:
+            self._lowered_since.pop(uuid, None)
         status = LiveStatus(
             game_uuid=uuid,
             home_score=home,
@@ -150,6 +175,7 @@ class LiveTracker:
             state=_phase(body.get("state")) or (before.state if before else None),
             period=_number(timing.get("period")) or (before.period if before else None),
             clock=timing.get("periodTime") or (before.clock if before else None),
+            updated=now,
         )
         self.statuses[uuid] = status
 
@@ -188,7 +214,7 @@ class LiveTracker:
                 goals.append(goal)
         return goals
 
-    def _goal_message(self, body: dict[str, Any]) -> Changes:
+    def _goal_message(self, body: dict[str, Any], now: datetime) -> Changes:
         uuid = str(body.get("gameUuid") or "")
         if not uuid or body.get("type") not in (None, "goal"):
             return Changes()
@@ -222,7 +248,7 @@ class LiveTracker:
             status = self.statuses.get(uuid)
             if status and home + away > status.home_score + status.away_score:
                 status.home_score, status.away_score = home, away
-                status.updated = datetime.now(UTC)
+                status.updated = now
                 changes.status = status
         return changes
 
@@ -232,7 +258,13 @@ class LiveTracker:
         """Return the scoring team as our schedule writes it."""
         home_code = self._home_codes.get(uuid)
         away_code = self._away_codes.get(uuid)
-        stream_code = (body.get("teamDetails") or {}).get("teamCode")
+        details = body.get("teamDetails") or {}
+        side = str(details.get("belongsTo") or "").lower()
+        if side == "home":
+            return home_code
+        if side == "away":
+            return away_code
+        stream_code = details.get("teamCode")
         if stream_code in (home_code, away_code):
             return stream_code
         # Otherwise tell by which side's score went up.
@@ -265,6 +297,7 @@ class LiveTracker:
             self._away_codes,
             self._announced,
             self._details,
+            self._lowered_since,
         ):
             for uuid in [u for u in store if u not in keep]:
                 del store[uuid]
@@ -358,10 +391,11 @@ class LiveFeed:
                     continue
                 text = "\n".join(lines)
                 lines = []
-                self.recent.append(text[:2000])
-                _LOGGER.debug("Live message: %s", text[:500])
                 for kind, body in split_messages(text):
+                    # Every game of the day comes through; keep ours only.
                     if str(body.get("gameUuid") or "") in self.following:
+                        self.recent.append(text[:2000])
+                        _LOGGER.debug("Live message: %s", text[:1000])
                         self._on_message(kind, body)
 
 
@@ -370,6 +404,10 @@ def _phase(value: Any) -> str | None:
         return None
     raw = str(value).replace("_", "").replace(" ", "").lower()
     return PHASES.get(raw, raw)
+
+
+def _team_code(side: dict[str, Any]) -> str | None:
+    return side.get("teamCode") or side.get("teamId") or None
 
 
 def _number(value: Any) -> int | None:
