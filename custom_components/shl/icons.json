@@ -10,6 +10,11 @@
         "default": "mdi:alarm-light-outline"
       }
     },
+    "number": {
+      "live_delay": {
+        "default": "mdi:timer-sand"
+      }
+    },
     "sensor": {
       "next_game": {
         "default": "mdi:calendar-clock"

@@ -1,7 +1,7 @@
 """A live updates switch per favorite team.
 
 Off by default. Live can be turned off for a single game - when watching it
-on TV, where the stream is usually ahead of the picture, or at the arena -
+on TV, where the stream can be ahead of the picture, or at the arena -
 without reloading the integration. The state survives restarts.
 """
 

@@ -85,6 +85,11 @@
         }
       }
     },
+    "number": {
+      "live_delay": {
+        "name": "Live delay"
+      }
+    },
     "sensor": {
       "next_game": {
         "name": "Next game",

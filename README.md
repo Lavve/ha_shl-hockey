@@ -59,11 +59,12 @@ Each favorite team gets its own device with a calendar, four sensors, a goal eve
 | `event.frolunda_hc_goal`          | Last goal time | Fires `goal_for` when the team scores and `goal_against` when the opponent does. Only with live updates on.                              |
 | `switch.frolunda_hc_live_updates` | `on`/`off`     | Live updates for the team's games. Off by default. Found under **Configuration** on the device page.                                     |
 
-The **SHL** device has one sensor:
+The **SHL** device has the standings and the live delay:
 
-| Entity                 | State                    | Description                              |
-| ---------------------- | ------------------------ | ---------------------------------------- |
-| `sensor.shl_standings` | Season, e.g. `2026/2027` | The full table in the `table` attribute. |
+| Entity                  | State                    | Description                                                                 |
+| ----------------------- | ------------------------ | --------------------------------------------------------------------------- |
+| `sensor.shl_standings`  | Season, e.g. `2026/2027` | The full table in the `table` attribute.                                    |
+| `number.shl_live_delay` | Seconds, `0`–`300`       | Holds all live updates back. `0` by default. Found under **Configuration**. |
 
 ### Attributes
 
@@ -126,6 +127,8 @@ The intervals cannot be changed. If you want full control, turn off polling in t
 Off by default, and turned on per team with its **Live updates** switch. You can turn it off for a single game – the stream can be ahead of the TV broadcast – by hand or from an automation. When on, the integration opens the same live stream that shl.se's own game center uses, but only while a team with live on is playing, and closes it after the game. The stream pushes score, period and goals as they happen – nothing is polled more often. Polling above continues as a backup, and the final result is fetched as soon as the stream reports the game as ended. See the [goal light](examples/automations/goal_light.yaml) example and the [next game](examples/cards/next_game_live.yaml) card.
 
 A goal reaches the stream when shl.se registers it, usually within seconds but sometimes a couple of minutes later (a video review, for example). The goal event is sent as soon as it arrives, so assists that shl.se adds afterwards may be missing from it.
+
+**Watching on a stream or a TV that lags?** Set **Live delay** on the SHL device to hold every live update back by up to 5 minutes: goal events, score, period and game clock all wait the same time, so a goal light and the next game card never get ahead of the picture. It applies to all teams and can be changed during a game. Polling is not delayed, so right after the final whistle the last game sensor may show the result before the delayed stream does.
 
 ## Contributing
 

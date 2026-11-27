@@ -46,6 +46,7 @@ custom_components/shl/
   sensor.py       Sensors.
   event.py        Goal event per favorite team (fires only with live on).
   switch.py       Live updates switch per favorite team (restores its state).
+  number.py       Live delay for the whole integration (restores its value).
   diagnostics.py  Download diagnostics (last data, next update, table state).
   manifest.json
   icons.json      Entity icons (by translation_key).

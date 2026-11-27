@@ -10,8 +10,9 @@ from typing import Any
 import aiohttp
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
 from homeassistant.helpers.dispatcher import async_dispatcher_send
+from homeassistant.helpers.event import async_call_later
 from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
@@ -93,6 +94,10 @@ class ShlCoordinator(DataUpdateCoordinator[ShlData]):
         # Teams with their live switch on. Filled in by the switches as they
         # restore their state, so the stream stays closed until one is on.
         self.live_teams: set[str] = set()
+        # Seconds to hold every live message back, to match a TV or stream
+        # that lags behind. Set by the live delay number entity.
+        self.live_delay = 0
+        self._delayed: set[CALLBACK_TYPE] = set()
         self.feed = LiveFeed(
             session,
             self._handle_live_message,
@@ -344,6 +349,31 @@ class ShlCoordinator(DataUpdateCoordinator[ShlData]):
 
     @callback
     def _handle_live_message(self, kind: str, body: dict[str, Any]) -> None:
+        """Apply a stream message now, or after the live delay."""
+        if self.live_delay <= 0:
+            self._apply_live_message(kind, body)
+            return
+
+        # Hold the message back; everything live - score, clock, goal events -
+        # is delayed alike, so a card and a goal light never get ahead of the
+        # picture.
+        @callback
+        def _apply_later(_now: datetime) -> None:
+            self._delayed.discard(cancel)
+            self._apply_live_message(kind, body)
+
+        cancel = async_call_later(self.hass, self.live_delay, _apply_later)
+        self._delayed.add(cancel)
+
+    @callback
+    def async_cancel_delayed(self) -> None:
+        """Drop the messages still waiting for the live delay."""
+        for cancel in self._delayed:
+            cancel()
+        self._delayed.clear()
+
+    @callback
+    def _apply_live_message(self, kind: str, body: dict[str, Any]) -> None:
         """Apply a stream message and tell the entities."""
         changes = self.tracker.handle(kind, body)
         for goal in changes.goals:
@@ -370,6 +400,8 @@ class ShlCoordinator(DataUpdateCoordinator[ShlData]):
             "standings_source": self._standings_source,
             "live": {
                 "teams": sorted(self.live_teams),
+                "delay": self.live_delay,
+                "delayed_messages": len(self._delayed),
                 "connected": self.feed.connected,
                 "following": sorted(self.feed.following),
                 "statuses": {
