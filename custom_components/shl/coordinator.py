@@ -1,4 +1,4 @@
-"""DataUpdateCoordinator for the SHL Hockey integration."""
+"""DataUpdateCoordinator for the SHL integration."""
 
 from __future__ import annotations
 
@@ -7,16 +7,19 @@ from datetime import datetime
 import logging
 from typing import Any
 
+import aiohttp
+
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
 from .api import ShlApiClient, ShlApiError
 from .const import CONF_TEAMS, DOMAIN, GAME_TYPE_REGULAR, POST_SEASON_GAME_TYPES
+from .live import FOLLOW_AFTER, FOLLOW_BEFORE, LiveFeed, LiveStatus, LiveTracker
 from .models import Game, SeasonFilter, Standing
-from .table import standings_from_games
 from .schedule import (
     FAILURE_RETRY,
     HOLD_DATA,
@@ -28,6 +31,7 @@ from .schedule import (
     should_refresh_filter,
     table_behind,
 )
+from .table import standings_from_games
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -35,6 +39,11 @@ STORAGE_VERSION = 1
 STORAGE_KEY = f"{DOMAIN}.season_filter"
 
 type ShlConfigEntry = ConfigEntry[ShlCoordinator]
+
+
+def goal_signal(entry_id: str) -> str:
+    """Return the dispatcher signal goals are sent on."""
+    return f"{DOMAIN}_{entry_id}_goal"
 
 
 @dataclass(frozen=True, slots=True)
@@ -54,7 +63,11 @@ class ShlCoordinator(DataUpdateCoordinator[ShlData]):
     config_entry: ShlConfigEntry
 
     def __init__(
-        self, hass: HomeAssistant, entry: ShlConfigEntry, client: ShlApiClient
+        self,
+        hass: HomeAssistant,
+        entry: ShlConfigEntry,
+        client: ShlApiClient,
+        session: aiohttp.ClientSession,
     ) -> None:
         """Initialize the coordinator."""
         super().__init__(
@@ -76,6 +89,17 @@ class ShlCoordinator(DataUpdateCoordinator[ShlData]):
         self._table_behind_since: datetime | None = None
         self._table_behind_played: int | None = None
         self._standings_source = "official"
+        self.tracker = LiveTracker()
+        # Teams with their live switch on. Filled in by the switches as they
+        # restore their state, so the stream stays closed until one is on.
+        self.live_teams: set[str] = set()
+        self.feed = LiveFeed(
+            session,
+            self._handle_live_message,
+            lambda coro: entry.async_create_background_task(
+                hass, coro, f"{DOMAIN} live stream"
+            ),
+        )
 
     @staticmethod
     async def async_remove_store(hass: HomeAssistant) -> None:
@@ -114,6 +138,8 @@ class ShlCoordinator(DataUpdateCoordinator[ShlData]):
         finished = is_season_finished(regular)
         games = sorted(regular + post_season, key=lambda g: g.start)
         standings = await self._async_get_standings(now, season, regular, games, previous)
+
+        self._follow_live_games(now, games)
 
         self.update_interval = next_update_delay(now, games, self.favorites)
         if self._table_behind:
@@ -283,6 +309,52 @@ class ShlCoordinator(DataUpdateCoordinator[ShlData]):
         # Forget the played count, so the next update reads the table again.
         self._standings_played_count = None
 
+    def live_status(self, game: Game, team_code: str) -> LiveStatus | None:
+        """Return the live status of a game, if the team has live on."""
+        if team_code not in self.live_teams:
+            return None
+        return self.tracker.statuses.get(game.uuid)
+
+    @callback
+    def async_set_live(self, team_code: str, on: bool) -> None:
+        """Turn live updates on or off for a team, without reloading."""
+        if on:
+            self.live_teams.add(team_code)
+        else:
+            self.live_teams.discard(team_code)
+        if self.data is not None:
+            self._follow_live_games(dt_util.utcnow(), self.data.games)
+            self.async_update_listeners()
+
+    def _follow_live_games(self, now: datetime, games: list[Game]) -> None:
+        """Keep the live stream open while a team with live on is playing."""
+        teams = self.live_teams & set(self.favorites)
+        playing = [
+            g
+            for g in games
+            if not g.is_played
+            and (g.home.code in teams or g.away.code in teams)
+            and g.start - FOLLOW_BEFORE <= now < g.start + FOLLOW_AFTER
+        ]
+        for game in playing:
+            self.tracker.expect(game.uuid, game.home.code, game.away.code)
+        uuids = {g.uuid for g in playing}
+        self.tracker.forget(uuids)
+        self.feed.follow(uuids)
+
+    @callback
+    def _handle_live_message(self, kind: str, body: dict[str, Any]) -> None:
+        """Apply a stream message and tell the entities."""
+        changes = self.tracker.handle(kind, body)
+        for goal in changes.goals:
+            _LOGGER.debug("Goal: %s", goal)
+            async_dispatcher_send(self.hass, goal_signal(self.config_entry.entry_id), goal)
+        if changes.status is not None or changes.goals:
+            self.async_update_listeners()
+        if changes.ended:
+            # Fetch the final result now instead of at the next poll.
+            self.hass.async_create_task(self.async_request_refresh())
+
     def diagnostics(self) -> dict[str, Any]:
         """Return the coordinator's internal state for diagnostics."""
 
@@ -296,6 +368,23 @@ class ShlCoordinator(DataUpdateCoordinator[ShlData]):
             "holding_old_data": self._holding,
             "table_behind": self._table_behind,
             "standings_source": self._standings_source,
+            "live": {
+                "teams": sorted(self.live_teams),
+                "connected": self.feed.connected,
+                "following": sorted(self.feed.following),
+                "statuses": {
+                    uuid: {
+                        "home_score": s.home_score,
+                        "away_score": s.away_score,
+                        "state": s.state,
+                        "period": s.period,
+                        "clock": s.clock,
+                        "updated": s.updated.isoformat(),
+                    }
+                    for uuid, s in self.tracker.statuses.items()
+                },
+                "recent_messages": list(self.feed.recent),
+            },
             "table_behind_since": iso(self._table_behind_since),
         }
 

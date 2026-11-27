@@ -23,7 +23,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "Inställningar för SHL Hockey",
+        "title": "Inställningar för SHL",
         "data": {
           "teams": "Favoritlag"
         },
@@ -40,6 +40,49 @@
     "calendar": {
       "games": {
         "name": "Matcher"
+      }
+    },
+    "event": {
+      "goal": {
+        "name": "Mål",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "goal_for": "Mål för",
+              "goal_against": "Mål emot"
+            }
+          },
+          "team": {
+            "name": "Målgörande lag"
+          },
+          "home_team": {
+            "name": "Hemmalag"
+          },
+          "away_team": {
+            "name": "Bortalag"
+          },
+          "home_score": {
+            "name": "Hemmalagets mål"
+          },
+          "away_score": {
+            "name": "Bortalagets mål"
+          },
+          "scorer": {
+            "name": "Målskytt"
+          },
+          "assists": {
+            "name": "Assist"
+          },
+          "period": {
+            "name": "Period"
+          },
+          "clock": {
+            "name": "Matchtid"
+          },
+          "strength": {
+            "name": "Spelläge"
+          }
+        }
       }
     },
     "sensor": {
@@ -76,6 +119,28 @@
           },
           "away_logo": {
             "name": "Bortalagets logga"
+          },
+          "home_score": {
+            "name": "Hemmalagets mål"
+          },
+          "away_score": {
+            "name": "Bortalagets mål"
+          },
+          "period": {
+            "name": "Period"
+          },
+          "clock": {
+            "name": "Matchtid"
+          },
+          "live_state": {
+            "name": "Matchläge",
+            "state": {
+              "ongoing": "Pågår",
+              "period_break": "Periodpaus",
+              "overtime": "Förlängning",
+              "shootout": "Straffläggning",
+              "ended": "Avslutad"
+            }
           }
         }
       },
@@ -179,6 +244,11 @@
             "name": "Tabell"
           }
         }
+      }
+    },
+    "switch": {
+      "live_updates": {
+        "name": "Liveuppdateringar"
       }
     }
   }

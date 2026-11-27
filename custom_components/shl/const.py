@@ -1,4 +1,4 @@
-"""Constants for the SHL Hockey integration.
+"""Constants for the SHL integration.
 
 This module must not import Home Assistant, so the API client can be
 tested on its own (see scripts/test_api.py).
@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import Final
 
 DOMAIN: Final = "shl"
-VERSION: Final = "2026.11.0b4"  # keep in sync with manifest.json
+VERSION: Final = "2026.11.0b5"  # keep in sync with manifest.json
 SHL_URL: Final = "https://www.shl.se"
 LEAGUE_DEVICE_ID: Final = "league"
 
@@ -24,7 +24,7 @@ STANDINGS_PROVIDER: Final = "statnet"
 STANDINGS_COUNT: Final = 25
 
 # Identify ourselves honestly so SHL can see what is calling them.
-USER_AGENT: Final = f"HomeAssistant-SHLHockey/{VERSION}"
+USER_AGENT: Final = f"HomeAssistant-SHL/{VERSION}"
 REQUEST_TIMEOUT: Final = 20  # seconds
 
 # --- Game types (stable codes in the filter response) ---------------------

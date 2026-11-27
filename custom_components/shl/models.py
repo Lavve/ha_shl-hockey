@@ -1,4 +1,4 @@
-"""Data models for the SHL Hockey integration.
+"""Data models for the SHL integration.
 
 Plain dataclasses with raw values (UTC datetimes, ints). Formatting for
 the user's language and locale is left to Home Assistant.

@@ -5,6 +5,11 @@
         "default": "mdi:hockey-puck"
       }
     },
+    "event": {
+      "goal": {
+        "default": "mdi:alarm-light-outline"
+      }
+    },
     "sensor": {
       "next_game": {
         "default": "mdi:calendar-clock"
@@ -20,6 +25,14 @@
       },
       "games": {
         "default": "mdi:hockey-sticks"
+      }
+    },
+    "switch": {
+      "live_updates": {
+        "default": "mdi:access-point",
+        "state": {
+          "off": "mdi:access-point-off"
+        }
       }
     }
   }

@@ -23,7 +23,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "SHL Hockey options",
+        "title": "SHL options",
         "data": {
           "teams": "Favorite teams"
         },
@@ -40,6 +40,49 @@
     "calendar": {
       "games": {
         "name": "Games"
+      }
+    },
+    "event": {
+      "goal": {
+        "name": "Goal",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "goal_for": "Goal for",
+              "goal_against": "Goal against"
+            }
+          },
+          "team": {
+            "name": "Scoring team"
+          },
+          "home_team": {
+            "name": "Home team"
+          },
+          "away_team": {
+            "name": "Away team"
+          },
+          "home_score": {
+            "name": "Home score"
+          },
+          "away_score": {
+            "name": "Away score"
+          },
+          "scorer": {
+            "name": "Scorer"
+          },
+          "assists": {
+            "name": "Assists"
+          },
+          "period": {
+            "name": "Period"
+          },
+          "clock": {
+            "name": "Game clock"
+          },
+          "strength": {
+            "name": "Strength"
+          }
+        }
       }
     },
     "sensor": {
@@ -76,6 +119,28 @@
           },
           "away_logo": {
             "name": "Away team logo"
+          },
+          "home_score": {
+            "name": "Home score"
+          },
+          "away_score": {
+            "name": "Away score"
+          },
+          "period": {
+            "name": "Period"
+          },
+          "clock": {
+            "name": "Game clock"
+          },
+          "live_state": {
+            "name": "Game phase",
+            "state": {
+              "ongoing": "Ongoing",
+              "period_break": "Intermission",
+              "overtime": "Overtime",
+              "shootout": "Shootout",
+              "ended": "Ended"
+            }
           }
         }
       },
@@ -179,6 +244,11 @@
             "name": "Table"
           }
         }
+      }
+    },
+    "switch": {
+      "live_updates": {
+        "name": "Live updates"
       }
     }
   }
