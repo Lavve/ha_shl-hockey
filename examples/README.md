@@ -13,7 +13,7 @@ All examples use Frölunda HC. Search and replace `frolunda_hc` with your team's
 
 | File | Shows | Requires |
 |---|---|---|
-| [next_game.yaml](cards/next_game.yaml) | Countdown, live and final score | – (card-mod optional) |
+| [next_game_live.yaml](cards/next_game_live.yaml) | Countdown, live score and final score | ([live updates](../README.md#live-updates) and card-mod optional) |
 | [upcoming_games.yaml](cards/upcoming_games.yaml) | The next five games | Games played sensor |
 | [latest_results.yaml](cards/latest_results.yaml) | The five latest results | Games played sensor |
 | [team_stats.yaml](cards/team_stats.yaml) | Position, points, record, home/away, form | Games played sensor, [button-card](https://github.com/custom-cards/button-card) |
@@ -27,7 +27,7 @@ The **Games played** sensor is disabled by default. Enable it on the team's devi
 |---|---|
 | [game_notification.yaml](automations/game_notification.yaml) | A notification five minutes before puck drop |
 | [game_notification_calendar.yaml](automations/game_notification_calendar.yaml) | The same, with the calendar trigger – no templates needed |
-| [goal_light.yaml](automations/goal_light.yaml) | Flashes a light when your team scores. Requires live updates. |
+| [goal_light.yaml](automations/goal_light.yaml) | Flashes a light when your team scores. Requires [live updates](../README.md#live-updates). |
 
 ## Language and formats
 

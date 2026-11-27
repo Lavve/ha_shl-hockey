@@ -3,17 +3,19 @@
 A Home Assistant integration that shows games, results and standings from the Swedish Hockey League (SHL) for your favorite teams.
 
 > [!IMPORTANT]
-> This integration is **not affiliated with or endorsed by SHL**. It uses
-> shl.se's public but **unofficial** API, which may change or stop working at
-> any time. All data belongs to SHL.
+> This integration is **not affiliated with or endorsed by SHL**. It uses shl.se's public but **unofficial** API, which may change or stop working at any time. All data belongs to SHL and is shown as shl.se publishes it – if a score, a goal or a time is wrong or late, it is wrong or late at shl.se too.
 
 <p align="center">
-  <img src="images/unplayed.png" alt="Next game and upcoming games" width="32%" align="top">
-  <img src="images/played.png" alt="Latest results" width="32%" align="top">
+  <img src="images/next_game_live.png" alt="Next game with the live score" width="59%" align="top">
+  <img src="images/health.png" alt="Team stats: position, points, record and form" width="39%" align="top">
+</p>
+<p align="center">
   <img src="images/table.png" alt="Standings" width="32%" align="top">
+  <img src="images/unplayed.png" alt="Upcoming games" width="32%" align="top">
+  <img src="images/played.png" alt="Latest results" width="32%" align="top">
 </p>
 
-<sub>Example dashboard built with Markdown and flex-table cards using this integration's sensors. The cards themselves are not part of the integration – see [Examples](#examples).</sub>
+<sub>Example dashboard built with Markdown, button-card and flex-table cards using this integration's sensors. The cards themselves are not part of the integration – see [Examples](#examples).</sub>
 
 ## Features
 
@@ -87,7 +89,7 @@ Ready-to-copy dashboard cards and automations are in the [examples](examples/) f
 
 | Example                                                                              | Shows                                                |
 | ------------------------------------------------------------------------------------ | ---------------------------------------------------- |
-| [Next game](examples/cards/next_game.yaml)                                           | Countdown, live and final score                      |
+| [Next game](examples/cards/next_game_live.yaml)                                      | Countdown, live score and final score                |
 | [Upcoming games](examples/cards/upcoming_games.yaml)                                 | The next five games                                  |
 | [Latest results](examples/cards/latest_results.yaml)                                 | The five latest results                              |
 | [Team stats](examples/cards/team_stats.yaml)                                         | Position, points, record, home/away and form         |
@@ -121,7 +123,9 @@ The intervals cannot be changed. If you want full control, turn off polling in t
 
 ### Live updates
 
-Off by default, and turned on per team with its **Live updates** switch. You can turn it off for a single game – the stream is usually ahead of the TV broadcast – by hand or from an automation. When on, the integration opens the same live stream that shl.se's own game center uses, but only while a team with live on is playing, and closes it after the game. The stream pushes score, period and goals as they happen – nothing is polled more often. Polling above continues as a backup, and the final result is fetched as soon as the stream reports the game as ended. See the [goal light](examples/automations/goal_light.yaml) example.
+Off by default, and turned on per team with its **Live updates** switch. You can turn it off for a single game – the stream can be ahead of the TV broadcast – by hand or from an automation. When on, the integration opens the same live stream that shl.se's own game center uses, but only while a team with live on is playing, and closes it after the game. The stream pushes score, period and goals as they happen – nothing is polled more often. Polling above continues as a backup, and the final result is fetched as soon as the stream reports the game as ended. See the [goal light](examples/automations/goal_light.yaml) example and the [next game](examples/cards/next_game_live.yaml) card.
+
+A goal reaches the stream when shl.se registers it, usually within seconds but sometimes a couple of minutes later (a video review, for example). The goal event is sent as soon as it arrives, so assists that shl.se adds afterwards may be missing from it.
 
 ## Contributing
 

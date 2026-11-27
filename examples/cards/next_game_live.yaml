@@ -1,0 +1,93 @@
+# Next game: countdown before puck drop, the live score during the game,
+# and the final score for 6 hours after the game.
+#
+# During the game, with live updates on: the score, the period and the time
+# played in it. With live updates off: "Live" and the venue until the result
+# is in.
+#
+# Requires: nothing (built-in Markdown card).
+# Optional: live updates (switch.frolunda_hc_live_updates) for the live score;
+#   card-mod, for the faded logos behind the card and tighter headings.
+# Team: replace "frolunda_hc" with your team's entity prefix.
+
+type: markdown
+content: |
+  {%- set nx = 'sensor.frolunda_hc_next_game' -%}
+  {%- set lg = 'sensor.frolunda_hc_last_game' -%}
+  {%- set start = as_datetime(states(nx), none) -%}
+  {%- set ls = state_attr(lg, 'start') -%}
+  {%- set last_start = ls if ls is datetime else as_datetime(ls, none) -%}
+  {%- set final = last_start is not none and now() < last_start + timedelta(hours=6) -%}
+  {%- set src = lg if final else nx -%}
+  {%- set mins = ((now() - start).total_seconds() / 60) | int if start else none -%}
+  {%- set phase = state_attr(nx, 'live_state') -%}
+  {%- set phases = {'period_break': 'Intermission', 'overtime': 'Overtime',
+      'shootout': 'Shootout', 'ended': 'Final'} -%}
+  {%- set results = {'win': '🟢 Win', 'loss': '🔴 Loss',
+      'overtime_win': '🟢 Win (OT)', 'overtime_loss': '🔴 Loss (OT)',
+      'shootout_win': '🟢 Win (SO)', 'shootout_loss': '🔴 Loss (SO)'} -%}
+  <table width="100%"><tr>
+  <td width="30%" align="center"><img src="{{ state_attr(src, 'home_logo') }}" width="64" height="64"><br><b>{{ state_attr(src, 'home_team') }}</b></td>
+  <td align="center">
+  {%- if final %}
+    <sup>SLUTRESULTAT</sup><h1>{{ state_attr(lg, 'home_score') }} – {{ state_attr(lg, 'away_score') }}</h1>
+    {{ results.get(states(lg), '') }}
+  {%- elif phase %}
+    <sup>🔴 LIVE</sup><h1>{{ state_attr(nx, 'home_score') }} – {{ state_attr(nx, 'away_score') }}</h1>
+    {{ phases.get(phase, 'Period ' ~ state_attr(nx, 'period') ~ ' · ' ~ state_attr(nx, 'clock')) }}
+  {%- elif mins is not none and mins < 0 %}
+    {%- set m = -mins -%}
+    <sup>PUCKSLÄPP OM</sup><h1>{{ (m // 60 ~ '') if m >= 60 else '' }}:{{ m % 60 }}</h1>
+    {{ (start | as_local).strftime('%H:%M') }} · {{ state_attr(nx, 'venue') }}
+  {%- elif mins is not none and mins < 165 %}
+    <sup>🔴 LIVE</sup><h1>vs</h1>
+    {{ state_attr(nx, 'venue') }}
+  {%- else %}
+    <sup>MATCHEN SLUT</sup><h1>vs</h1>Väntar på resultat…
+  {%- endif %}
+  </td>
+  <td width="30%" align="center"><img src="{{ state_attr(src, 'away_logo') }}" width="64" height="64"><br><b>{{ state_attr(src, 'away_team') }}</b></td>
+  </tr></table>
+card_mod:
+  style:
+    .: |
+      {%- set lg = 'sensor.frolunda_hc_last_game' -%}
+      {%- set ls = state_attr(lg, 'start') -%}
+      {%- set last_start = ls if ls is datetime else as_datetime(ls, none) -%}
+      {%- set final = last_start is not none and now() < last_start + timedelta(hours=6) -%}
+      {%- set src = lg if final else 'sensor.frolunda_hc_next_game' -%}
+      ha-card {
+        position: relative;
+        overflow: hidden !important;
+      }
+      ha-card::before,
+      ha-card::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        width: 160px;
+        height: 160px;
+        transform: translateY(-50%);
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        opacity: 0.12;
+        filter: blur(1px);
+        pointer-events: none;
+      }
+      ha-card::before {
+        left: -48px;
+        background-image: url("{{ state_attr(src, 'home_logo') }}");
+      }
+      ha-card::after {
+        right: -48px;
+        background-image: url("{{ state_attr(src, 'away_logo') }}");
+      }
+    ha-markdown$: |
+      td {
+        border: 0 !important;
+      }
+      h1 {
+        margin: 4px 0;
+        line-height: 1.1;
+      }
