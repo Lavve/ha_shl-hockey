@@ -14,6 +14,7 @@ from .coordinator import ShlConfigEntry, ShlCoordinator
 PLATFORMS: list[Platform] = [
     Platform.CALENDAR,
     Platform.EVENT,
+    Platform.NUMBER,
     Platform.SENSOR,
     Platform.SWITCH,
 ]
@@ -27,6 +28,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ShlConfigEntry) -> bool:
 
     entry.runtime_data = coordinator
     entry.async_on_unload(coordinator.feed.stop)
+    entry.async_on_unload(coordinator.async_cancel_delayed)
     _remove_unselected_teams(hass, entry, coordinator.favorites)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True

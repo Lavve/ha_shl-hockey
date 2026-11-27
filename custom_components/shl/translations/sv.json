@@ -85,6 +85,11 @@
         }
       }
     },
+    "number": {
+      "live_delay": {
+        "name": "Livefördröjning"
+      }
+    },
     "sensor": {
       "next_game": {
         "name": "Nästa match",
